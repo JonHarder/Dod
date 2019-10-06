@@ -95,6 +95,19 @@ updateState oldState action =
   Left "You sit around for a while"
 
 
+maybeHead :: [a] -> Maybe a
+maybeHead s = if length s > 0
+              then
+                Just $ s !! 0
+              else
+                Nothing
+
+
+findItem :: String -> Room -> Maybe Thing
+findItem searchLabel searchRoom =
+  maybeHead $ filter (\thing -> label thing == searchLabel) (roomThings searchRoom)
+
+
 loop :: GameState -> IO ()
 loop oldState
   | timeLeft oldState <= Time 0 =
@@ -106,7 +119,12 @@ loop oldState
         Look ->
           putStrLn (show $ room oldState) >> loop oldState
         LookAt thing ->
-          putStrLn ("Looking at " ++ thing) >> loop oldState
+          do case findItem thing (room oldState) of
+               Just found ->
+                 print found
+               Nothing ->
+                 putStrLn "Couldn't find any of those here."
+             loop oldState
         Panic ->
           putStrLn "bye!"
         Update update ->
@@ -126,7 +144,7 @@ loop oldState
 
 initState :: GameState
 initState =
-  GameState { room = Room "the first room. There is a room to the north" []
+  GameState { room = Room "the first room. boat?" [Thing "boat" "there's a boat here, for some reason."]
             , timeLeft = Time 4
             }
 
