@@ -68,9 +68,8 @@ timeDiff oldState newState =
 
 showStateDiff :: GameState -> GameState -> [String]
 showStateDiff oldState newState =
-  let diffs = [ roomDiff oldState newState
-              , timeDiff oldState newState
-              ]
+  let funcs = [ roomDiff, timeDiff ]
+      diffs = fmap (\f -> f oldState newState) funcs
   in catMaybes diffs
 
 
