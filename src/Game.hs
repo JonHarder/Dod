@@ -41,13 +41,14 @@ data Direction
 data UpdatingAction
   = Go Direction
 
-
+  
 data Action
   = Panic
   | Look
   | Update UpdatingAction
   | BadInput
 
+  
 
 showStateDiff :: GameState -> GameState -> [String]
 showStateDiff oldState newState =
@@ -128,8 +129,8 @@ loop oldState = do
 
 initState :: GameState
 initState =
-  let r = Room "the first room" Nothing Nothing Nothing Nothing
-      r2 = Room "the second room" Nothing (Just r) Nothing Nothing
+  let r = Room "the first room. There is a room to the north" Nothing Nothing Nothing Nothing
+      r2 = Room "the second room. There is a room to the south" Nothing (Just r) Nothing Nothing
       finalRoom = r { northRoom = Just r2 }
   in GameState { room = finalRoom, message = Nothing }
 
