@@ -8,13 +8,15 @@ import Data.Maybe (catMaybes)
 
 data Room =
   Room { description :: String
-       , northRoom :: Maybe Room
-       , southRoom :: Maybe Room
-       , eastRoom :: Maybe Room
-       , westRoom :: Maybe Room
+       , roomThings :: [Thing]
        }
   deriving Eq
 
+data Thing =
+  Thing { label :: String
+        , thingDescription :: String
+        }
+  deriving Eq
 
 data GameState = GameState { room :: Room, timeLeft :: Time }
   deriving (Eq)
@@ -31,17 +33,12 @@ instance Show Time where
 instance Show Room where
   show = description
 
-
-data Direction
-  = North
-  | South
-  | East
-  | West
-  deriving Show
+instance Show Thing where
+  show = thingDescription
 
 
 data UpdatingAction
-  = Go Direction
+  = NoOp
 
   
 data Action
@@ -80,11 +77,8 @@ parseInput input =
   case input of
     "panic" -> Panic
     "look" -> Look
-    "go north" -> Update $ Go North -- use parsec to construct actions with strings
-    "go south" -> Update $ Go South
-    "go east" -> Update $ Go East
-    "go west" -> Update $ Go West
     "help" -> Help
+    "wait" -> Update NoOp
     _ -> BadInput
 
 
@@ -96,31 +90,7 @@ tickState state =
 
 updateState :: GameState -> UpdatingAction -> Either String GameState
 updateState oldState action =
-  case action of
-    Go North ->
-      case northRoom (room oldState) of
-        Just newRoom ->
-          Right $ oldState { room = newRoom }
-        Nothing ->
-          Left "you can't go north from here"
-    Go South ->
-      case southRoom (room oldState) of
-        Just newRoom ->
-          Right $ oldState { room = newRoom }
-        Nothing ->
-          Left "you can't go south from here"
-    Go East ->
-      case eastRoom (room oldState) of
-        Just newRoom ->
-          Right $ oldState { room = newRoom }
-        Nothing ->
-          Left "you can't go east from here"
-    Go West ->
-      case westRoom (room oldState) of
-        Just newRoom ->
-          Right oldState { room = newRoom }
-        Nothing ->
-          Left "you can't go west from here"
+  Left "You sit around for a while"
 
 
 loop :: GameState -> IO ()
@@ -152,12 +122,9 @@ loop oldState
 
 initState :: GameState
 initState =
-  let r = Room "the first room. There is a room to the north" Nothing Nothing Nothing Nothing
-      r2 = Room "the second room. There is a room to the south" Nothing (Just r) Nothing Nothing
-      finalRoom = r { northRoom = Just r2 }
-  in GameState { room = finalRoom
-               , timeLeft = Time 4
-               }
+  GameState { room = Room "the first room. There is a room to the north" []
+            , timeLeft = Time 4
+            }
 
 
 runGame :: IO ()
