@@ -4,6 +4,7 @@ module Game
 
 import Util (prompt)
 import Data.Maybe (catMaybes)
+import Data.String.Utils (startswith)
 
 
 data Room =
@@ -44,6 +45,7 @@ data UpdatingAction
 data Action
   = Panic
   | Look
+  | LookAt String
   | Update UpdatingAction
   | Help
   | BadInput
@@ -73,13 +75,13 @@ showStateDiff oldState newState =
 
 
 parseInput :: String -> Action
-parseInput input =
-  case input of
-    "panic" -> Panic
-    "look" -> Look
-    "help" -> Help
-    "wait" -> Update NoOp
-    _ -> BadInput
+parseInput input
+  | input == "panic" = Panic
+  | input == "look" = Look
+  | input == "help" = Help
+  | input == "wait" = Update NoOp
+  | startswith "look " input = LookAt $ drop 5 input
+  | otherwise = BadInput
 
 
 tickState :: GameState -> GameState
@@ -103,6 +105,8 @@ loop oldState
       case action of
         Look ->
           putStrLn (show $ room oldState) >> loop oldState
+        LookAt thing ->
+          putStrLn ("Looking at " ++ thing) >> loop oldState
         Panic ->
           putStrLn "bye!"
         Update update ->
