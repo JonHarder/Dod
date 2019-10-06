@@ -1,5 +1,6 @@
 module Util 
   ( prompt
+  , printMaybe
   ) where
 
 import System.IO
@@ -11,3 +12,13 @@ prompt message = do
   hFlush stdout
   input <- getLine
   return input
+
+
+printMaybe :: Maybe String -> IO ()
+printMaybe ma =
+  case ma of
+    Just a ->
+      putStrLn a
+    Nothing ->
+      return ()
+  
