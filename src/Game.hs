@@ -3,6 +3,7 @@ module Game
     ) where
 
 import Util (prompt)
+import Data.Maybe (catMaybes)
 
 
 data Room =
@@ -14,16 +15,21 @@ data Room =
        }
   deriving Eq
 
-data GameState = GameState { room :: Room, message :: Maybe String, timeLeft :: Int }
+
+data GameState = GameState { room :: Room, timeLeft :: Time }
   deriving (Eq)
 
 
-class Look a where
-  look :: a -> String
+newtype Time = Time Int
+  deriving (Eq, Ord)
 
 
-instance Look Room where
-  look = description
+instance Show Time where
+  show (Time t) = "Time left: " ++ show t
+
+
+instance Show Room where
+  show = description
 
 
 data Direction
@@ -46,17 +52,27 @@ data Action
   | BadInput
 
 
+roomDiff :: GameState -> GameState -> Maybe String
+roomDiff oldState newState =
+  if room oldState /= room newState
+    then Just $ show $ room newState
+    else Nothing
+
+
+timeDiff :: GameState -> GameState -> Maybe String
+timeDiff oldState newState =
+  if timeLeft oldState /= timeLeft newState
+    then Just $ show $ timeLeft newState
+  else
+    Nothing
+
+
 showStateDiff :: GameState -> GameState -> [String]
 showStateDiff oldState newState =
-  let output = case message newState of
-        Just m ->
-          [m]
-        Nothing ->
-          []
-      output' = if room oldState /= room newState
-        then (look $ room newState) : output
-        else output
-  in output'
+  let diffs = [ roomDiff oldState newState
+              , timeDiff oldState newState
+              ]
+  in catMaybes diffs
 
 
 parseInput :: String -> Action
@@ -72,57 +88,61 @@ parseInput input =
     _ -> BadInput
 
 
-updateState :: GameState -> UpdatingAction -> GameState
+tickState :: GameState -> GameState
+tickState state =
+  let (Time t) = timeLeft state
+  in state { timeLeft = Time (t - 1) }
+
+
+updateState :: GameState -> UpdatingAction -> Either String GameState
 updateState oldState action =
-  let newState = case action of
-        Go North ->
-          case northRoom (room oldState) of
-            Just newRoom ->
-              oldState { room = newRoom }
-            Nothing ->
-              oldState { message = Just "you can't go north from here" }
-        Go South ->
-          case southRoom (room oldState) of
-            Just newRoom ->
-              oldState { room = newRoom }
-            Nothing ->
-              oldState { message = Just "you can't go south from here" }
-        Go East ->
-          case eastRoom (room oldState) of
-            Just newRoom ->
-              oldState { room = newRoom }
-            Nothing ->
-              oldState { message = Just "you can't go east from here" }
-        Go West ->
-          case westRoom (room oldState) of
-            Just newRoom ->
-              oldState { room = newRoom }
-            Nothing ->
-              oldState { message = Just "you can't go west from here" }
-  in newState { timeLeft = timeLeft newState - 1 }
+  case action of
+    Go North ->
+      case northRoom (room oldState) of
+        Just newRoom ->
+          Right $ oldState { room = newRoom }
+        Nothing ->
+          Left "you can't go north from here"
+    Go South ->
+      case southRoom (room oldState) of
+        Just newRoom ->
+          Right $ oldState { room = newRoom }
+        Nothing ->
+          Left "you can't go south from here"
+    Go East ->
+      case eastRoom (room oldState) of
+        Just newRoom ->
+          Right $ oldState { room = newRoom }
+        Nothing ->
+          Left "you can't go east from here"
+    Go West ->
+      case westRoom (room oldState) of
+        Just newRoom ->
+          Right oldState { room = newRoom }
+        Nothing ->
+          Left "you can't go west from here"
 
-
-resetMessage :: GameState -> GameState
-resetMessage state = state { message = Nothing }
-  
 
 loop :: GameState -> IO ()
-loop oldState = do
-  if timeLeft oldState <= 0
-    then putStrLn "Times up! You died."
-    else do
-      putStrLn $ "Time left: " ++ show (timeLeft oldState)
+loop oldState
+  | timeLeft oldState <= Time 0 =
+      putStrLn "Times up! You died."
+  | otherwise = do
       input <- prompt "What do you wanna do: "
       let action = parseInput input
       case action of
         Look ->
-          putStrLn (look $ room oldState) >> loop oldState
+          putStrLn (show $ room oldState) >> loop oldState
         Panic ->
           putStrLn "bye!"
         Update update ->
-          do let newState = updateState oldState update
-             putStrLn $ unlines $ showStateDiff oldState newState
-             loop $ resetMessage newState
+          let updateResult = fmap tickState $ updateState oldState update
+          in case updateResult of
+               Right newState ->
+                 do putStrLn . unlines $ showStateDiff oldState newState
+                    loop newState
+               Left message ->
+                 putStrLn message >> loop oldState
         Help ->
           do putStrLn "commands: look, go north|south|east|west, panic, help"
              loop oldState
@@ -136,8 +156,7 @@ initState =
       r2 = Room "the second room. There is a room to the south" Nothing (Just r) Nothing Nothing
       finalRoom = r { northRoom = Just r2 }
   in GameState { room = finalRoom
-               , message = Nothing
-               , timeLeft = 4
+               , timeLeft = Time 4
                }
 
 
