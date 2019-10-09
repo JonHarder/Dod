@@ -2,7 +2,7 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt, printMaybe)
+import Util (prompt, printMaybe, maybeHead)
 import Data.Maybe (catMaybes)
 import Data.String.Utils (startswith)
 
@@ -115,13 +115,6 @@ updateState oldState action =
         Just thing ->
           updateState oldState (interaction thing)
 
-
-maybeHead :: [a] -> Maybe a
-maybeHead s = if length s > 0
-              then
-                Just $ s !! 0
-              else
-                Nothing
 
 
 findInInventory :: String -> Inventory -> Maybe Thing

@@ -1,6 +1,7 @@
 module Util 
   ( prompt
   , printMaybe
+  , maybeHead
   ) where
 
 import System.IO
@@ -22,3 +23,10 @@ printMaybe ma =
     Nothing ->
       return ()
   
+
+maybeHead :: [a] -> Maybe a
+maybeHead s = if length s > 0
+              then
+                Just $ s !! 0
+              else
+                Nothing
