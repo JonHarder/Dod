@@ -2,7 +2,7 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt, printMaybe, maybeHead)
+import Util (prompt, printMaybe, printLines, maybeHead)
 import Data.Maybe (catMaybes)
 import Data.String.Utils (startswith)
 
@@ -122,35 +122,45 @@ findInInventory searchLabel (Inventory things) =
   maybeHead $ filter (\thing -> label thing == searchLabel) things
 
 
+lookAt :: String -> Inventory -> IO ()
+lookAt thingLabel i =
+  case findInInventory thingLabel i of
+    Just found ->
+      print found
+    Nothing ->
+      putStrLn "Couldn't find any of those here."
+
+
+update :: GameState -> UpdatingAction -> IO ()
+update oldState action =
+  let updateResult = updateState oldState action
+  in case updateResult of
+       Right (newState, message) ->
+         do let newState' = tickState newState
+                stateDiff = showStateDiff oldState newState'
+            printMaybe message
+            printLines stateDiff
+            loop newState'
+       Left message ->
+         putStrLn message >> loop oldState
+
+
 loop :: GameState -> IO ()
 loop oldState
   | timeLeft oldState <= Time 0 =
       putStrLn "Times up! You died."
   | otherwise = do
-      input <- prompt "What do you wanna do: "
-      let action = parseInput input
+      action <- fmap parseInput $ prompt "What do you wanna do: "
       case action of
         Look ->
           putStrLn (show $ room oldState) >> loop oldState
         LookAt thing ->
-          do case findInInventory thing (inventory $ room oldState) of
-               Just found ->
-                 print found
-               Nothing ->
-                 putStrLn "Couldn't find any of those here."
+          do lookAt thing $ roomInventory oldState
              loop oldState
         Panic ->
           putStrLn "bye!"
-        Update update ->
-          let updateResult = updateState oldState update
-          in case updateResult of
-               Right (newState, message) ->
-                 do let newState' = tickState newState
-                    printMaybe message
-                    putStrLn . unlines $ showStateDiff oldState newState'
-                    loop newState'
-               Left message ->
-                 putStrLn message >> loop oldState
+        Update updatingAction ->
+          update oldState updatingAction
         Help ->
           do putStrLn "commands: look, go north|south|east|west, panic, help"
              loop oldState

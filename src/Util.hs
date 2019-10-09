@@ -1,6 +1,7 @@
 module Util 
   ( prompt
   , printMaybe
+  , printLines
   , maybeHead
   ) where
 
@@ -22,6 +23,10 @@ printMaybe ma =
       putStrLn a
     Nothing ->
       return ()
+
+
+printLines :: [String] -> IO ()
+printLines = putStrLn . unlines
   
 
 maybeHead :: [a] -> Maybe a
