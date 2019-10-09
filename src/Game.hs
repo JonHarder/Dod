@@ -3,7 +3,7 @@ module Game
     ) where
 
 import Util (prompt, printMaybe, printLines, maybeHead)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import Data.String.Utils (startswith)
 
 
@@ -56,7 +56,7 @@ data Action
   | LookAt String
   | Update UpdatingAction
   | Help
-  | BadInput
+  | BadInput (Maybe String)
 
 
 roomDiff :: GameState -> GameState -> Maybe String
@@ -87,9 +87,10 @@ parseInput input
   | input == "look" = Look
   | input == "help" = Help
   | input == "wait" = Update NoOp
+  | input == "interact" = BadInput (Just "what do you want to interact with?")
   | startswith "interact " input = Update $ Interact $ drop 9 input
   | startswith "look " input = LookAt $ drop 5 input
-  | otherwise = BadInput
+  | otherwise = BadInput Nothing
 
 
 tickState :: GameState -> GameState
@@ -158,14 +159,15 @@ loop oldState
           do lookAt thing $ roomInventory oldState
              loop oldState
         Panic ->
-          putStrLn "bye!"
+          putStrLn "you flip the fluff out."
         Update updatingAction ->
           update oldState updatingAction
         Help ->
-          do putStrLn "commands: look, go north|south|east|west, panic, help"
+          do putStrLn "commands: look, interact, panic, help"
              loop oldState
-        BadInput ->
-          putStrLn "huh?" >> loop oldState
+        BadInput msg ->
+          do putStrLn $ fromMaybe "huh?" msg
+             loop oldState
     
 
 initState :: GameState
