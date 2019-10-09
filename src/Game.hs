@@ -51,6 +51,7 @@ data UpdatingAction
   | Interact Label
   deriving Eq
 
+
 data Action
   = Panic
   | Look
@@ -58,6 +59,13 @@ data Action
   | Update UpdatingAction
   | Help
   | BadInput (Maybe String)
+
+
+data UpdateResult
+  = NoChangeWithMessage String
+  | ChangeWithMessage GameState String
+  | ChangeWithNoMessage GameState
+  | Terminate String
 
 
 roomDiff :: GameState -> GameState -> Maybe String
@@ -103,17 +111,18 @@ tickState state =
 roomInventory :: GameState -> Inventory
 roomInventory = inventory . room
 
-updateState :: GameState -> UpdatingAction -> Either String (GameState, Maybe String)
+
+updateState :: GameState -> UpdatingAction -> UpdateResult
 updateState oldState action =
   case action of
     NoOp ->
-      Right (oldState, Just "you do nothing for a bit")
+      ChangeWithMessage oldState "you do nothing for a bit"
     Inspect msg ->
-      Right (oldState, Just msg)
+      ChangeWithMessage oldState msg
     Interact l ->
       case findInInventory l (roomInventory oldState) of
         Nothing ->
-          Left "couldn't find that here"
+          NoChangeWithMessage "couldn't find that here"
         Just thing ->
           updateState oldState (interaction thing)
 
@@ -123,27 +132,34 @@ findInInventory :: Label -> Inventory -> Maybe Thing
 findInInventory = Map.lookup
 
 
-lookAt :: Label -> Inventory -> IO ()
+lookAt :: Label -> Inventory -> String
 lookAt thingLabel i =
-  case findInInventory thingLabel i of
-    Just found ->
-      print found
-    Nothing ->
-      putStrLn "Couldn't find any of those here."
+  maybe "couldn't find any of those here" show (findInInventory thingLabel i)
 
 
-update :: GameState -> UpdatingAction -> IO ()
-update oldState action =
-  let updateResult = updateState oldState action
-  in case updateResult of
-       Right (newState, message) ->
-         do let newState' = tickState newState
-                stateDiff = showStateDiff oldState newState'
-            printMaybe message
-            printLines stateDiff
-            loop newState'
-       Left message ->
-         putStrLn message >> loop oldState
+dispatchAction :: GameState -> Action -> UpdateResult
+dispatchAction state action =
+  case action of
+    Look ->
+      NoChangeWithMessage $ show (room state)
+    LookAt thing ->
+      NoChangeWithMessage $ lookAt thing (roomInventory state)
+    Panic ->
+      Terminate "you flip the fluff out"
+    Update updatingAction ->
+      updateState state updatingAction
+    Help ->
+      NoChangeWithMessage "commands: look, interact, wait, help, panic"
+    BadInput msg ->
+      NoChangeWithMessage $ fromMaybe "huh?" msg
+
+
+stateDelta :: GameState -> GameState -> Maybe String -> (GameState, String)
+stateDelta oldState newState maybeMessage =
+  let newState' = tickState newState
+      stateDiff = showStateDiff oldState newState'
+      messages = maybe stateDiff (:stateDiff) maybeMessage
+  in (newState', unlines messages)
 
 
 loop :: GameState -> IO ()
@@ -152,35 +168,37 @@ loop oldState
       putStrLn "Times up! You died."
   | otherwise = do
       action <- fmap parseInput $ prompt "What do you wanna do: "
-      case action of
-        Look ->
-          putStrLn (show $ room oldState) >> loop oldState
-        LookAt thing ->
-          do lookAt thing $ roomInventory oldState
-             loop oldState
-        Panic ->
-          putStrLn "you flip the fluff out."
-        Update updatingAction ->
-          update oldState updatingAction
-        Help ->
-          do putStrLn "commands: look, interact, panic, help"
-             loop oldState
-        BadInput msg ->
-          do putStrLn $ fromMaybe "huh?" msg
-             loop oldState
+      case dispatchAction oldState action of
+        NoChangeWithMessage msg ->
+          putStrLn msg >> loop oldState
+        ChangeWithMessage newState msg ->
+          do
+            let (tickedState, messages) = stateDelta oldState newState (Just msg)
+            putStrLn messages
+            loop tickedState
+        ChangeWithNoMessage newState ->
+          do
+            let (tickedState, messages) = stateDelta oldState newState Nothing
+            putStrLn messages
+            loop tickedState
+        Terminate msg ->
+          putStrLn msg
     
 
 initState :: GameState
 initState =
-  GameState { room = Room
-                 { description = "the first room. boat? probably also a box"
-                 , inventory =
-                   Map.singleton (Label "boat")
-                     Thing { thingDescription = "There's a boat here, for some reason."
-                           , interaction = Inspect "It seriously doesn't make any sense, it's just a boat...in the middle of the room..."
-                           }
+  let boat = (Label "boat"
+             , Thing
+                 { thingDescription = "There's a boat here, for some reason."
+                 , interaction = Inspect "It seriously doesn't make any ense, it's just a boat."
                  }
-            , timeLeft = Time 9999
+             )
+      i = Map.fromList [boat]
+  in GameState { room = Room
+                 { description = "the first room. boat? probably also a box"
+                 , inventory = i
+                 }
+            , timeLeft = Time 10
             }
 
 
