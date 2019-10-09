@@ -2,22 +2,28 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt)
+import Util (prompt, printMaybe)
 import Data.Maybe (catMaybes)
 import Data.String.Utils (startswith)
 
 
 data Room =
   Room { description :: String
-       , roomThings :: [Thing]
+       , inventory :: Inventory
        }
   deriving Eq
 
 data Thing =
   Thing { label :: String
         , thingDescription :: String
+        , interaction :: UpdatingAction
         }
   deriving Eq
+
+
+newtype Inventory = Inventory [Thing]
+  deriving Eq
+
 
 data GameState = GameState { room :: Room, timeLeft :: Time }
   deriving (Eq)
@@ -40,8 +46,10 @@ instance Show Thing where
 
 data UpdatingAction
   = NoOp
+  | Inspect String
+  | Interact String
+  deriving Eq
 
-  
 data Action
   = Panic
   | Look
@@ -79,6 +87,7 @@ parseInput input
   | input == "look" = Look
   | input == "help" = Help
   | input == "wait" = Update NoOp
+  | startswith "interact " input = Update $ Interact $ drop 9 input
   | startswith "look " input = LookAt $ drop 5 input
   | otherwise = BadInput
 
@@ -89,9 +98,22 @@ tickState state =
   in state { timeLeft = Time (t - 1) }
 
 
-updateState :: GameState -> UpdatingAction -> Either String GameState
+roomInventory :: GameState -> Inventory
+roomInventory = inventory . room
+
+updateState :: GameState -> UpdatingAction -> Either String (GameState, Maybe String)
 updateState oldState action =
-  Left "You sit around for a while"
+  case action of
+    NoOp ->
+      Right (oldState, Just "you do nothing for a bit")
+    Inspect msg ->
+      Right (oldState, Just msg)
+    Interact l ->
+      case findInInventory l (roomInventory oldState) of
+        Nothing ->
+          Left "couldn't find that here"
+        Just thing ->
+          updateState oldState (interaction thing)
 
 
 maybeHead :: [a] -> Maybe a
@@ -102,9 +124,9 @@ maybeHead s = if length s > 0
                 Nothing
 
 
-findItem :: String -> Room -> Maybe Thing
-findItem searchLabel searchRoom =
-  maybeHead $ filter (\thing -> label thing == searchLabel) (roomThings searchRoom)
+findInInventory :: String -> Inventory -> Maybe Thing
+findInInventory searchLabel (Inventory things) =
+  maybeHead $ filter (\thing -> label thing == searchLabel) things
 
 
 loop :: GameState -> IO ()
@@ -118,7 +140,7 @@ loop oldState
         Look ->
           putStrLn (show $ room oldState) >> loop oldState
         LookAt thing ->
-          do case findItem thing (room oldState) of
+          do case findInInventory thing (inventory $ room oldState) of
                Just found ->
                  print found
                Nothing ->
@@ -127,11 +149,13 @@ loop oldState
         Panic ->
           putStrLn "bye!"
         Update update ->
-          let updateResult = fmap tickState $ updateState oldState update
+          let updateResult = updateState oldState update
           in case updateResult of
-               Right newState ->
-                 do putStrLn . unlines $ showStateDiff oldState newState
-                    loop newState
+               Right (newState, message) ->
+                 do let newState' = tickState newState
+                    printMaybe message
+                    putStrLn . unlines $ showStateDiff oldState newState'
+                    loop newState'
                Left message ->
                  putStrLn message >> loop oldState
         Help ->
@@ -143,8 +167,17 @@ loop oldState
 
 initState :: GameState
 initState =
-  GameState { room = Room "the first room. boat?" [Thing "boat" "there's a boat here, for some reason."]
-            , timeLeft = Time 4
+  GameState { room = Room
+                 { description = "the first room. boat?"
+                 , inventory = Inventory
+                      [ Thing { label = "boat"
+                              , thingDescription = "there's a boat here, for some reason."
+                              , interaction = Inspect "It seriously doesn't make any sense, it's just a boat... in the middle of the room..."
+                              
+                              }
+                      ]
+                 }
+            , timeLeft = Time 9999
             }
 
 
