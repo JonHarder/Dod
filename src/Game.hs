@@ -2,8 +2,9 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt, printMaybe, printLines, maybeHead)
+import Util (prompt, printMaybe, printLines)
 import Data.Maybe (catMaybes, fromMaybe)
+import qualified Data.Map.Strict as Map
 import Data.String.Utils (startswith)
 
 
@@ -14,16 +15,16 @@ data Room =
   deriving Eq
 
 data Thing =
-  Thing { label :: String
-        , thingDescription :: String
+  Thing { thingDescription :: String
         , interaction :: UpdatingAction
         }
   deriving Eq
 
+data Label = Label String
+  deriving (Eq, Ord)
 
-newtype Inventory = Inventory [Thing]
-  deriving Eq
 
+type Inventory = (Map.Map Label Thing)
 
 data GameState = GameState { room :: Room, timeLeft :: Time }
   deriving (Eq)
@@ -47,13 +48,13 @@ instance Show Thing where
 data UpdatingAction
   = NoOp
   | Inspect String
-  | Interact String
+  | Interact Label
   deriving Eq
 
 data Action
   = Panic
   | Look
-  | LookAt String
+  | LookAt Label
   | Update UpdatingAction
   | Help
   | BadInput (Maybe String)
@@ -88,8 +89,8 @@ parseInput input
   | input == "help" = Help
   | input == "wait" = Update NoOp
   | input == "interact" = BadInput (Just "what do you want to interact with?")
-  | startswith "interact " input = Update $ Interact $ drop 9 input
-  | startswith "look " input = LookAt $ drop 5 input
+  | startswith "interact " input = Update $ Interact (Label $ drop 9 input)
+  | startswith "look " input = LookAt $ (Label $ drop 5 input)
   | otherwise = BadInput Nothing
 
 
@@ -118,12 +119,11 @@ updateState oldState action =
 
 
 
-findInInventory :: String -> Inventory -> Maybe Thing
-findInInventory searchLabel (Inventory things) =
-  maybeHead $ filter (\thing -> label thing == searchLabel) things
+findInInventory :: Label -> Inventory -> Maybe Thing
+findInInventory = Map.lookup
 
 
-lookAt :: String -> Inventory -> IO ()
+lookAt :: Label -> Inventory -> IO ()
 lookAt thingLabel i =
   case findInInventory thingLabel i of
     Just found ->
@@ -173,14 +173,12 @@ loop oldState
 initState :: GameState
 initState =
   GameState { room = Room
-                 { description = "the first room. boat?"
-                 , inventory = Inventory
-                      [ Thing { label = "boat"
-                              , thingDescription = "there's a boat here, for some reason."
-                              , interaction = Inspect "It seriously doesn't make any sense, it's just a boat... in the middle of the room..."
-                              
-                              }
-                      ]
+                 { description = "the first room. boat? probably also a box"
+                 , inventory =
+                   Map.singleton (Label "boat")
+                     Thing { thingDescription = "There's a boat here, for some reason."
+                           , interaction = Inspect "It seriously doesn't make any sense, it's just a boat...in the middle of the room..."
+                           }
                  }
             , timeLeft = Time 9999
             }
