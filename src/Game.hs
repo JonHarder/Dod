@@ -2,10 +2,12 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt, printMaybe, printLines)
+import Util (prompt)
+import Control.Monad (liftM)
 import Data.Maybe (catMaybes, fromMaybe)
+import Data.Either (fromRight)
 import qualified Data.Map.Strict as Map
-import Data.String.Utils (startswith)
+import Text.ParserCombinators.Parsec (Parser, (<|>), anyToken, eof, parse, manyTill, try, string, space)
 
 
 data Room =
@@ -21,7 +23,7 @@ data Thing =
   deriving Eq
 
 data Label = Label String
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 
 type Inventory = (Map.Map Label Thing)
@@ -49,7 +51,7 @@ data UpdatingAction
   = NoOp
   | Inspect String
   | Interact Label
-  deriving Eq
+  deriving (Eq, Show)
 
 
 data Action
@@ -59,6 +61,60 @@ data Action
   | Update UpdatingAction
   | Help
   | BadInput (Maybe String)
+  deriving (Show)
+
+-- https://hackage.haskell.org/package/parsec-3.1.13.0/docs/Text-Parsec-Combinator.html
+
+restOfLine :: Parser String
+restOfLine = manyTill anyToken eof
+
+
+unary :: String -> a -> Parser a
+unary s a = string s >> return a
+
+
+binary :: String -> (String -> a) -> Parser a
+binary s f = do
+  _ <- string s >> space
+  liftM f restOfLine
+
+parseLook :: Parser Action
+parseLook = unary "look" Look
+
+
+parseLookAt :: Parser Action
+parseLookAt = binary "look" $ LookAt . Label
+
+
+parsePanic :: Parser Action
+parsePanic = unary "panic" Panic
+
+
+parseHelp :: Parser Action
+parseHelp = unary "help" Help
+
+
+parseWait :: Parser Action
+parseWait = unary "wait" (Update NoOp)
+
+
+parseInteract :: Parser Action
+parseInteract = binary "interact" $ Update . Interact . Label
+
+
+parseAction :: Parser Action
+parseAction =
+      try parseLookAt
+  <|> try parseInteract
+  <|> parseLook
+  <|> parsePanic
+  <|> parseHelp
+  <|> parseWait
+
+
+parseInput :: String -> Action
+parseInput =
+  fromRight (BadInput (Just "unrecognized action")) . parse parseAction ""
 
 
 data UpdateResult
@@ -88,18 +144,6 @@ showStateDiff oldState newState =
   let funcs = [ roomDiff, timeDiff ]
       diffs = fmap (\f -> f oldState newState) funcs
   in catMaybes diffs
-
-
-parseInput :: String -> Action
-parseInput input
-  | input == "panic" = Panic
-  | input == "look" = Look
-  | input == "help" = Help
-  | input == "wait" = Update NoOp
-  | input == "interact" = BadInput (Just "what do you want to interact with?")
-  | startswith "interact " input = Update $ Interact (Label $ drop 9 input)
-  | startswith "look " input = LookAt $ (Label $ drop 5 input)
-  | otherwise = BadInput Nothing
 
 
 tickState :: GameState -> GameState
@@ -190,7 +234,7 @@ initState =
   let boat = (Label "boat"
              , Thing
                  { thingDescription = "There's a boat here, for some reason."
-                 , interaction = Inspect "It seriously doesn't make any ense, it's just a boat."
+                 , interaction = Inspect "It seriously doesn't make any sense, it's just a boat."
                  }
              )
       i = Map.fromList [boat]
