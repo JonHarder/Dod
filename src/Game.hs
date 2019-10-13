@@ -32,7 +32,7 @@ instance Show Label where
 
 type Inventory = (Map.Map Label Thing)
 
-data GameState = GameState { room :: Room, timeLeft :: Time }
+data GameState = GameState { you :: Inventory, room :: Room, timeLeft :: Time }
   deriving (Eq)
 
 
@@ -55,6 +55,7 @@ data UpdatingAction
   = NoOp
   | Inspect String
   | Interact Label
+  | Grab Label
   deriving (Eq, Show)
 
 
@@ -62,6 +63,7 @@ data Action
   = Panic
   | Look
   | LookAt Label
+  | Inventory
   | Update UpdatingAction
   | Help
   | BadInput (Maybe String)
@@ -106,11 +108,21 @@ parseInteract :: Parser Action
 parseInteract = binary "interact" $ Update . Interact . Label
 
 
+parseGrab :: Parser Action
+parseGrab = binary "grab" $ Update . Grab . Label
+
+
+parseInventory :: Parser Action
+parseInventory = unary "inventory" Inventory
+
+
 parseAction :: Parser Action
 parseAction =
       try parseLookAt
   <|> try parseInteract
   <|> parseLook
+  <|> parseGrab
+  <|> parseInventory
   <|> parsePanic
   <|> parseHelp
   <|> parseWait
@@ -173,7 +185,17 @@ updateState oldState action =
           NoChangeWithMessage "couldn't find that here"
         Just thing ->
           updateState oldState (interaction thing)
-
+    Grab l ->
+      case findInInventory l (roomInventory oldState) of
+        Nothing ->
+          NoChangeWithMessage $ "There aren't any " ++ show l ++ " around to grab"
+        Just thing ->
+          let addedToYou = oldState { you = Map.insert l thing $ you oldState }
+              gameRoom = room addedToYou
+              gameRoomInventory = inventory gameRoom
+              removedRoomInventory = Map.delete l gameRoomInventory
+              updatedRoom = addedToYou { room = gameRoom { inventory = removedRoomInventory } }
+          in ChangeWithMessage updatedRoom $ "You grab the " ++ show l
 
 
 findInInventory :: Label -> Inventory -> Maybe Thing
@@ -192,6 +214,8 @@ dispatchAction state action =
       NoChangeWithMessage $ show (room state)
     LookAt thing ->
       NoChangeWithMessage $ lookAt thing (roomInventory state)
+    Inventory ->
+      NoChangeWithMessage $ "you have: " ++ show (Map.keys (you state))
     Panic ->
       Terminate "you flip the fluff out"
     Update updatingAction ->
@@ -241,11 +265,18 @@ initState =
                  , interaction = Inspect "It seriously doesn't make any sense, it's just a boat."
                  }
              )
-      i = Map.fromList [boat]
+      box = ( Label "box"
+            , Thing
+                 { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
+                 , interaction = Inspect "You open the box."
+                 }
+            )
+      i = Map.fromList [boat, box]
   in GameState { room = Room
                  { description = "the first room. boat? probably also a box"
                  , inventory = i
                  }
+               , you = Map.empty
             , timeLeft = Time 10
             }
 
