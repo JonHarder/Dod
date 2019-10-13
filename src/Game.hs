@@ -23,7 +23,11 @@ data Thing =
   deriving Eq
 
 data Label = Label String
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord)
+
+
+instance Show Label where
+  show (Label l) = l
 
 
 type Inventory = (Map.Map Label Thing)
@@ -114,7 +118,7 @@ parseAction =
 
 parseInput :: String -> Action
 parseInput =
-  fromRight (BadInput (Just "unrecognized action")) . parse parseAction ""
+  fromRight (BadInput Nothing) . parse parseAction ""
 
 
 data UpdateResult
@@ -178,7 +182,7 @@ findInInventory = Map.lookup
 
 lookAt :: Label -> Inventory -> String
 lookAt thingLabel i =
-  maybe "couldn't find any of those here" show (findInInventory thingLabel i)
+  maybe ("couldn't find " ++ show thingLabel ++ " here.") show (findInInventory thingLabel i)
 
 
 dispatchAction :: GameState -> Action -> UpdateResult
