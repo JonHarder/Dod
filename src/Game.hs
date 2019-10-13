@@ -195,6 +195,7 @@ updateState oldState action =
               gameRoom = room addedToYou
               gameRoomInventory = inventory gameRoom
               removedRoomInventory = Map.delete l gameRoomInventory
+              -- all this deep nesting of object updates probably calls for some lenses too
               updatedRoom = addedToYou { room = gameRoom { inventory = removedRoomInventory } }
           in ChangeWithMessage updatedRoom $ "You grab the " ++ show l
 
