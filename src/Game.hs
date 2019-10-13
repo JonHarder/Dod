@@ -190,6 +190,7 @@ updateState oldState action =
         Nothing ->
           NoChangeWithMessage $ "There aren't any " ++ show l ++ " around to grab"
         Just thing ->
+          -- this could really, really use the state monad
           let addedToYou = oldState { you = Map.insert l thing $ you oldState }
               gameRoom = room addedToYou
               gameRoomInventory = inventory gameRoom
