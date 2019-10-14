@@ -8,7 +8,7 @@ import Control.Monad.State
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Either (fromRight)
 import qualified Data.Map.Strict as Map
-import Text.ParserCombinators.Parsec (Parser, (<|>), anyToken, eof, parse, manyTill, try, string, space)
+import Text.ParserCombinators.Parsec (Parser, (<|>), anyToken, choice, eof, parse, manyTill, try, string, space)
 
 
 data Room =
@@ -94,9 +94,13 @@ verb :: String -> a -> Parser a
 verb s a = string s >> return a
 
 
-unaryVerb :: String -> (String -> a) -> Parser a
+alias :: [String] -> Parser String
+alias = choice . map string
+
+
+unaryVerb :: [String] -> (String -> a) -> Parser a
 unaryVerb s f = do
-  _ <- string s >> space
+  _ <- alias s >> space
   liftM f restOfLine
 
 
@@ -105,7 +109,7 @@ parseLook = verb "look" Look
 
 
 parseLookAt :: Parser Action
-parseLookAt = unaryVerb "look" $ LookAt . Label
+parseLookAt = unaryVerb ["look"] $ LookAt . Label
 
 
 parsePanic :: Parser Action
@@ -121,10 +125,7 @@ parseWait = verb "wait" (Update NoOp)
 
 
 parseInteract :: Parser Action
-parseInteract = do
-  _ <- string "interact" <|> string "grab"
-  _ <- space
-  liftM (Update . Interact . Label) restOfLine
+parseInteract = unaryVerb ["interact", "grab"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action
