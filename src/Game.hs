@@ -262,13 +262,12 @@ loop oldState
       case dispatchAction oldState action of
         NoChangeWithMessage msg ->
           putStrLn msg >> loop oldState
-        ChangedState newState message ->
-          do
-            let newState' = tickState newState
-                stateDiff = showStateDiff oldState newState'
-                messages = unlines $ message:stateDiff
-            putStrLn messages
-            loop newState'
+        ChangedState newState message -> do
+          let newState' = tickState newState
+              stateDiff = showStateDiff oldState newState'
+              messages = unlines $ message:stateDiff
+          putStrLn messages
+          loop newState'
         Terminate msg ->
           putStrLn msg
     
