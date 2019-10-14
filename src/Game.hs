@@ -18,9 +18,12 @@ data Room =
 
 data Thing =
   Thing { thingDescription :: String
-        , interaction :: UpdatingAction
+        , interaction :: Thing -> ThingAction
+        , label :: Label
         }
-  deriving Eq
+
+instance Eq Thing where
+  t1 == t2 = thingDescription t1 == thingDescription t2 && label t1 == label t2
 
 data Label = Label String
   deriving (Eq, Ord)
@@ -51,11 +54,16 @@ instance Show Thing where
   show = thingDescription
 
 
+data ThingAction
+  = Grab String Thing
+  | Inspect String Thing
+  deriving (Eq, Show)
+
+
 data UpdatingAction
   = NoOp
-  | Inspect String
   | Interact Label
-  | Grab Label
+  | ThingUpdatingAction ThingAction
   deriving (Eq, Show)
 
 
@@ -75,45 +83,45 @@ restOfLine :: Parser String
 restOfLine = manyTill anyToken eof
 
 
-unary :: String -> a -> Parser a
-unary s a = string s >> return a
+verb :: String -> a -> Parser a
+verb s a = string s >> return a
 
 
-binary :: String -> (String -> a) -> Parser a
-binary s f = do
+unaryVerb :: String -> (String -> a) -> Parser a
+unaryVerb s f = do
   _ <- string s >> space
   liftM f restOfLine
 
+
 parseLook :: Parser Action
-parseLook = unary "look" Look
+parseLook = verb "look" Look
 
 
 parseLookAt :: Parser Action
-parseLookAt = binary "look" $ LookAt . Label
+parseLookAt = unaryVerb "look" $ LookAt . Label
 
 
 parsePanic :: Parser Action
-parsePanic = unary "panic" Panic
+parsePanic = verb "panic" Panic
 
 
 parseHelp :: Parser Action
-parseHelp = unary "help" Help
+parseHelp = verb "help" Help
 
 
 parseWait :: Parser Action
-parseWait = unary "wait" (Update NoOp)
+parseWait = verb "wait" (Update NoOp)
 
 
 parseInteract :: Parser Action
-parseInteract = binary "interact" $ Update . Interact . Label
-
-
-parseGrab :: Parser Action
-parseGrab = binary "grab" $ Update . Grab . Label
+parseInteract = do
+  _ <- string "interact" <|> string "grab"
+  _ <- space
+  liftM (Update . Interact . Label) restOfLine
 
 
 parseInventory :: Parser Action
-parseInventory = unary "inventory" Inventory
+parseInventory = verb "inventory" Inventory
 
 
 parseAction :: Parser Action
@@ -121,7 +129,6 @@ parseAction =
       try parseLookAt
   <|> try parseInteract
   <|> parseLook
-  <|> parseGrab
   <|> parseInventory
   <|> parsePanic
   <|> parseHelp
@@ -135,8 +142,7 @@ parseInput =
 
 data UpdateResult
   = NoChangeWithMessage String
-  | ChangeWithMessage GameState String
-  | ChangeWithNoMessage GameState
+  | ChangedState GameState String
   | Terminate String
 
 
@@ -176,28 +182,26 @@ updateState :: GameState -> UpdatingAction -> UpdateResult
 updateState oldState action =
   case action of
     NoOp ->
-      ChangeWithMessage oldState "you do nothing for a bit"
-    Inspect msg ->
-      ChangeWithMessage oldState msg
+      ChangedState oldState "you do nothing for a bit"
     Interact l ->
       case findInInventory l (roomInventory oldState) of
         Nothing ->
           NoChangeWithMessage "couldn't find that here"
         Just thing ->
-          updateState oldState (interaction thing)
-    Grab l ->
-      case findInInventory l (roomInventory oldState) of
-        Nothing ->
-          NoChangeWithMessage $ "There aren't any " ++ show l ++ " around to grab"
-        Just thing ->
+          updateState oldState (ThingUpdatingAction $ (interaction thing) thing)
+    ThingUpdatingAction thingAction ->
+      case thingAction of
+        Grab msg thing ->
           -- this could really, really use the state monad
-          let addedToYou = oldState { you = Map.insert l thing $ you oldState }
+          let addedToYou = oldState { you = Map.insert (label thing) thing $ you oldState }
               gameRoom = room addedToYou
               gameRoomInventory = inventory gameRoom
-              removedRoomInventory = Map.delete l gameRoomInventory
+              removedRoomInventory = Map.delete (label thing) gameRoomInventory
               -- all this deep nesting of object updates probably calls for some lenses too
               updatedRoom = addedToYou { room = gameRoom { inventory = removedRoomInventory } }
-          in ChangeWithMessage updatedRoom $ "You grab the " ++ show l
+          in ChangedState updatedRoom msg
+        Inspect msg _ ->
+          ChangedState oldState msg
 
 
 findInInventory :: Label -> Inventory -> Maybe Thing
@@ -228,14 +232,6 @@ dispatchAction state action =
       NoChangeWithMessage $ fromMaybe "huh?" msg
 
 
-stateDelta :: GameState -> GameState -> Maybe String -> (GameState, String)
-stateDelta oldState newState maybeMessage =
-  let newState' = tickState newState
-      stateDiff = showStateDiff oldState newState'
-      messages = maybe stateDiff (:stateDiff) maybeMessage
-  in (newState', unlines messages)
-
-
 loop :: GameState -> IO ()
 loop oldState
   | timeLeft oldState <= Time 0 =
@@ -245,35 +241,30 @@ loop oldState
       case dispatchAction oldState action of
         NoChangeWithMessage msg ->
           putStrLn msg >> loop oldState
-        ChangeWithMessage newState msg ->
+        ChangedState newState message ->
           do
-            let (tickedState, messages) = stateDelta oldState newState (Just msg)
+            let newState' = tickState newState
+                stateDiff = showStateDiff oldState newState'
+                messages = unlines $ message:stateDiff
             putStrLn messages
-            loop tickedState
-        ChangeWithNoMessage newState ->
-          do
-            let (tickedState, messages) = stateDelta oldState newState Nothing
-            putStrLn messages
-            loop tickedState
+            loop newState'
         Terminate msg ->
           putStrLn msg
     
 
 initState :: GameState
 initState =
-  let boat = (Label "boat"
-             , Thing
+  let boat = Thing
                  { thingDescription = "There's a boat here, for some reason."
-                 , interaction = Inspect "It seriously doesn't make any sense, it's just a boat."
+                 , interaction = Grab "you grab the boat somehow."
+                 , label = Label "boat"
                  }
-             )
-      box = ( Label "box"
-            , Thing
+      box = Thing
                  { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
                  , interaction = Inspect "You open the box."
+                 , label = Label "box"
                  }
-            )
-      i = Map.fromList [boat, box]
+      i = Map.fromList [(label boat, boat), (label box, box)]
   in GameState { room = Room
                  { description = "the first room. boat? probably also a box"
                  , inventory = i
