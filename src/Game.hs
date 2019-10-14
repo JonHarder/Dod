@@ -199,15 +199,13 @@ removeFromRoom thing oldState =
 dispatchThingAction :: ThingAction -> State GameState UpdateResult
 dispatchThingAction action = do
   case action of
-    Grab msg thing ->
-      do
-        modify $ addToYou thing
-        modify $ removeFromRoom thing
-        newState <- get
-        return $ ChangedState newState msg
+    Grab msg thing -> do
+      modify $ addToYou thing
+      modify $ removeFromRoom thing
+      newState <- get
+      return $ ChangedState newState msg
     Inspect msg _ ->
-      do oldState <- get
-         return $ ChangedState oldState msg
+      get >>= \oldState -> return $ ChangedState oldState msg
 
 
 updateStateWithThing :: GameState -> ThingAction -> UpdateResult
