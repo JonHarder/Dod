@@ -4,6 +4,7 @@ module Game
 
 import Util (prompt)
 import Control.Monad (liftM)
+import Control.Monad.State
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Either (fromRight)
 import qualified Data.Map.Strict as Map
@@ -37,6 +38,12 @@ type Inventory = (Map.Map Label Thing)
 
 data GameState = GameState { you :: Inventory, room :: Room, timeLeft :: Time }
   deriving (Eq)
+
+
+addToYou :: Thing -> GameState -> GameState
+addToYou thing oldState =
+  let oldYou = you oldState
+  in oldState { you = Map.insert (label thing) thing oldYou }
 
 
 newtype Time = Time Int
@@ -169,13 +176,44 @@ showStateDiff oldState newState =
 
 
 tickState :: GameState -> GameState
-tickState state =
-  let (Time t) = timeLeft state
-  in state { timeLeft = Time (t - 1) }
+tickState oldState =
+  let (Time t) = timeLeft oldState
+  in oldState { timeLeft = Time (t - 1) }
 
 
 roomInventory :: GameState -> Inventory
 roomInventory = inventory . room
+
+
+findInInventory :: Label -> Inventory -> Maybe Thing
+findInInventory = Map.lookup
+
+
+removeFromRoom :: Thing -> GameState -> GameState
+removeFromRoom thing oldState =
+  let newInv = Map.delete (label thing) (roomInventory oldState)
+      newRoom = (room oldState) { inventory = newInv }
+  in oldState { room = newRoom }
+
+
+dispatchThingAction :: ThingAction -> State GameState UpdateResult
+dispatchThingAction action = do
+  case action of
+    Grab msg thing ->
+      do
+        modify $ addToYou thing
+        modify $ removeFromRoom thing
+        newState <- get
+        return $ ChangedState newState msg
+    Inspect msg _ ->
+      do oldState <- get
+         return $ ChangedState oldState msg
+
+
+updateStateWithThing :: GameState -> ThingAction -> UpdateResult
+updateStateWithThing oldState action =
+  let (updateResult, _) = runState (dispatchThingAction action) oldState
+  in updateResult
 
 
 updateState :: GameState -> UpdatingAction -> UpdateResult
@@ -190,22 +228,7 @@ updateState oldState action =
         Just thing ->
           updateState oldState (ThingUpdatingAction $ (interaction thing) thing)
     ThingUpdatingAction thingAction ->
-      case thingAction of
-        Grab msg thing ->
-          -- this could really, really use the state monad
-          let addedToYou = oldState { you = Map.insert (label thing) thing $ you oldState }
-              gameRoom = room addedToYou
-              gameRoomInventory = inventory gameRoom
-              removedRoomInventory = Map.delete (label thing) gameRoomInventory
-              -- all this deep nesting of object updates probably calls for some lenses too
-              updatedRoom = addedToYou { room = gameRoom { inventory = removedRoomInventory } }
-          in ChangedState updatedRoom msg
-        Inspect msg _ ->
-          ChangedState oldState msg
-
-
-findInInventory :: Label -> Inventory -> Maybe Thing
-findInInventory = Map.lookup
+      updateStateWithThing oldState thingAction
 
 
 lookAt :: Label -> Inventory -> String
@@ -214,18 +237,18 @@ lookAt thingLabel i =
 
 
 dispatchAction :: GameState -> Action -> UpdateResult
-dispatchAction state action =
+dispatchAction oldState action =
   case action of
     Look ->
-      NoChangeWithMessage $ show (room state)
+      NoChangeWithMessage $ show (room oldState)
     LookAt thing ->
-      NoChangeWithMessage $ lookAt thing (roomInventory state)
+      NoChangeWithMessage $ lookAt thing (roomInventory oldState)
     Inventory ->
-      NoChangeWithMessage $ "you have: " ++ show (Map.keys (you state))
+      NoChangeWithMessage $ "you have: " ++ show (Map.keys (you oldState))
     Panic ->
       Terminate "you flip the fluff out"
     Update updatingAction ->
-      updateState state updatingAction
+      updateState oldState updatingAction
     Help ->
       NoChangeWithMessage "commands: look, interact, wait, help, panic"
     BadInput msg ->
@@ -276,6 +299,5 @@ initState =
 
 runGame :: IO ()
 runGame = do
-  let state = initState
   putStrLn "welcome!"
-  loop state
+  loop initState
