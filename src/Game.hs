@@ -46,6 +46,12 @@ addToYou thing oldState =
   in oldState { you = Map.insert (label thing) thing oldYou }
 
 
+addToRoom :: Thing -> GameState -> GameState
+addToRoom thing oldState =
+  let newRoom = (room oldState) { inventory = Map.insert (label thing) thing $ roomInventory oldState }
+  in oldState { room = newRoom }
+
+
 newtype Time = Time Int
   deriving (Eq, Ord)
 
@@ -64,6 +70,7 @@ instance Show Thing where
 data ThingAction
   = Grab String
   | Inspect String
+  | ReplaceWithThings String [Thing]
   deriving (Eq, Show)
 
 
@@ -89,8 +96,8 @@ restOfLine :: Parser String
 restOfLine = manyTill anyToken eof
 
 
-verb :: String -> a -> Parser a
-verb s a = string s >> return a
+verb :: [String] -> a -> Parser a
+verb s a = alias s >> eof >> return a
 
 
 alias :: [String] -> Parser String
@@ -104,7 +111,7 @@ unaryVerb s f = do
 
 
 parseLook :: Parser Action
-parseLook = verb "look" Look
+parseLook = verb ["look"] Look
 
 
 parseLookAt :: Parser Action
@@ -112,15 +119,15 @@ parseLookAt = unaryVerb ["look"] $ LookAt . Label
 
 
 parsePanic :: Parser Action
-parsePanic = verb "panic" Panic
+parsePanic = verb ["panic"] Panic
 
 
 parseHelp :: Parser Action
-parseHelp = verb "help" Help
+parseHelp = verb ["help"] Help
 
 
 parseWait :: Parser Action
-parseWait = verb "wait" (Update NoOp)
+parseWait = verb ["wait"] (Update NoOp)
 
 
 parseInteract :: Parser Action
@@ -128,7 +135,7 @@ parseInteract = unaryVerb ["interact", "grab"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action
-parseInventory = verb "inventory" Inventory
+parseInventory = verb ["i", "inventory"] Inventory
 
 
 parseAction :: Parser Action
@@ -206,6 +213,11 @@ dispatchThingAction thing action = do
       return $ ChangedState newState msg
     Inspect msg ->
       get >>= \oldState -> return $ ChangedState oldState msg
+    ReplaceWithThings msg things -> do
+      modify $ removeFromRoom thing
+      modify $ \gameState-> foldl (flip addToRoom) gameState things
+      newState <- get
+      return $ ChangedState newState msg
 
 
 updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
@@ -279,7 +291,7 @@ initState =
                  }
       box = Thing
                  { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
-                 , interaction = Inspect "You open the box."
+                 , interaction = ReplaceWithThings "You open the box." []
                  , label = Label "box"
                  }
       i = Map.fromList [(label boat, boat), (label box, box)]
