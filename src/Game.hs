@@ -70,7 +70,7 @@ instance Show Thing where
 data ThingAction
   = Grab String
   | Inspect String
-  | ReplaceWithThings String [Thing]
+  | ReplaceSelfWithThings String [Thing]
   deriving (Eq, Show)
 
 
@@ -213,7 +213,7 @@ dispatchThingAction thing action = do
       return $ ChangedState newState msg
     Inspect msg ->
       get >>= \oldState -> return $ ChangedState oldState msg
-    ReplaceWithThings msg things -> do
+    ReplaceSelfWithThings msg things -> do
       modify $ removeFromRoom thing
       modify $ \gameState-> foldl (flip addToRoom) gameState things
       newState <- get
@@ -300,7 +300,7 @@ initState =
                 , label = Label "thimble"}
       box = Thing
                  { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
-                 , interaction = ReplaceWithThings "You open the box." [openBox, thimble]
+                 , interaction = ReplaceSelfWithThings "You open the box." [openBox, thimble]
                  , label = Label "box"
                  }
       i = Map.fromList [(label boat, boat), (label box, box)]
