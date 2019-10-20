@@ -135,7 +135,7 @@ parseInteract = unaryVerb ["interact", "grab"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action
-parseInventory = verb ["i", "inventory"] Inventory
+parseInventory = verb ["inventory", "i"] Inventory
 
 
 parseAction :: Parser Action
@@ -289,9 +289,18 @@ initState =
                  , interaction = Grab "you grab the boat somehow."
                  , label = Label "boat"
                  }
+      openBox = Thing
+                { thingDescription = "Theres a thimble in there"
+                , interaction = Inspect "its just a box"
+                , label = Label "box"
+                }
+      thimble = Thing
+                { thingDescription = "its a thimble, in the box"
+                , interaction = Grab "you grab the thimble"
+                , label = Label "thimble"}
       box = Thing
                  { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
-                 , interaction = ReplaceWithThings "You open the box." []
+                 , interaction = ReplaceWithThings "You open the box." [openBox, thimble]
                  , label = Label "box"
                  }
       i = Map.fromList [(label boat, boat), (label box, box)]
