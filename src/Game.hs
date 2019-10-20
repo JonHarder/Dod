@@ -19,7 +19,7 @@ data Room =
 
 data Thing =
   Thing { thingDescription :: String
-        , interaction :: Thing -> ThingAction
+        , interaction :: ThingAction
         , label :: Label
         }
 
@@ -62,15 +62,14 @@ instance Show Thing where
 
 
 data ThingAction
-  = Grab String Thing
-  | Inspect String Thing
+  = Grab String
+  | Inspect String
   deriving (Eq, Show)
 
 
 data UpdatingAction
   = NoOp
   | Interact Label
-  | ThingUpdatingAction ThingAction
   deriving (Eq, Show)
 
 
@@ -197,21 +196,21 @@ removeFromRoom thing oldState =
   in oldState { room = newRoom }
 
 
-dispatchThingAction :: ThingAction -> State GameState UpdateResult
-dispatchThingAction action = do
+dispatchThingAction :: Thing -> ThingAction -> State GameState UpdateResult
+dispatchThingAction thing action = do
   case action of
-    Grab msg thing -> do
+    Grab msg -> do
       modify $ addToYou thing
       modify $ removeFromRoom thing
       newState <- get
       return $ ChangedState newState msg
-    Inspect msg _ ->
+    Inspect msg ->
       get >>= \oldState -> return $ ChangedState oldState msg
 
 
-updateStateWithThing :: GameState -> ThingAction -> UpdateResult
-updateStateWithThing oldState action =
-  let (updateResult, _) = runState (dispatchThingAction action) oldState
+updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
+updateStateWithThing oldState thing action =
+  let (updateResult, _) = runState (dispatchThingAction thing action) oldState
   in updateResult
 
 
@@ -225,9 +224,7 @@ updateState oldState action =
         Nothing ->
           NoChangeWithMessage "couldn't find that here"
         Just thing ->
-          updateState oldState (ThingUpdatingAction $ (interaction thing) thing)
-    ThingUpdatingAction thingAction ->
-      updateStateWithThing oldState thingAction
+          updateStateWithThing oldState thing (interaction thing)
 
 
 lookAt :: Label -> Inventory -> String
