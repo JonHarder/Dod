@@ -1,16 +1,17 @@
 # goalz
 
+## done
+- actually do things next time
+- things stuff
+- things define things and have themselves
+- get rid of state
+- interact items to change current room
+- thingAction to add items to room
 
 ## todo
-- ~~actually do things next time~~
-- ~~things stuff~~
-- ~~things define things and have themselves~~
-- ~~get rid of state~~
 - derive room descriptions from room inventory
  - keep hidden items
-- ~~interact items to change current room~~
 - lenses
-- ~~thingAction to add items to room~~
 - open door
 - use key
 - binary verb
