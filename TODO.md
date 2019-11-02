@@ -5,6 +5,7 @@
 - ~~actually do things next time~~
 - ~~things stuff~~
 - ~~things define things and have themselves~~
+- ~~get rid of state~~
 - derive room descriptions from room inventory
  - keep hidden items
 - ~~interact items to change current room~~

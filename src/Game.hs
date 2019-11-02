@@ -3,11 +3,9 @@ module Game
     ) where
 
 import Util (prompt, (|>))
-import Control.Monad (liftM)
+import Actions (Action(..), Label(..), UpdatingAction(..), parseInput)
 import Data.Maybe (catMaybes, fromMaybe)
-import Data.Either (fromRight)
 import qualified Data.Map.Strict as Map
-import Text.ParserCombinators.Parsec (Parser, (<|>), anyToken, choice, eof, parse, manyTill, try, string, space)
 
 
 data Room =
@@ -25,12 +23,7 @@ data Thing =
 instance Eq Thing where
   t1 == t2 = thingDescription t1 == thingDescription t2 && label t1 == label t2
 
-data Label = Label String
-  deriving (Eq, Ord)
 
-
-instance Show Label where
-  show (Label l) = l
 
 type Inventory = (Map.Map Label Thing)
 
@@ -72,84 +65,9 @@ data ThingAction
   deriving (Eq, Show)
 
 
-data UpdatingAction
-  = NoOp
-  | Interact Label
-  deriving (Eq, Show)
-
-
-data Action
-  = Panic
-  | Look
-  | LookAt Label
-  | Inventory
-  | Update UpdatingAction
-  | Help
-  | BadInput (Maybe String)
-  deriving (Show)
 
 -- https://hackage.haskell.org/package/parsec-3.1.13.0/docs/Text-Parsec-Combinator.html
 
-restOfLine :: Parser String
-restOfLine = manyTill anyToken eof
-
-
-verb :: [String] -> a -> Parser a
-verb s a = alias s >> eof >> return a
-
-
-alias :: [String] -> Parser String
-alias = choice . map string
-
-
-unaryVerb :: [String] -> (String -> a) -> Parser a
-unaryVerb s f = do
-  _ <- alias s >> space
-  liftM f restOfLine
-
-
-parseLook :: Parser Action
-parseLook = verb ["look"] Look
-
-
-parseLookAt :: Parser Action
-parseLookAt = unaryVerb ["look"] $ LookAt . Label
-
-
-parsePanic :: Parser Action
-parsePanic = verb ["panic"] Panic
-
-
-parseHelp :: Parser Action
-parseHelp = verb ["help"] Help
-
-
-parseWait :: Parser Action
-parseWait = verb ["wait"] (Update NoOp)
-
-
-parseInteract :: Parser Action
-parseInteract = unaryVerb ["interact", "grab"] $ Update . Interact . Label
-
-
-parseInventory :: Parser Action
-parseInventory = verb ["inventory", "i"] Inventory
-
-
-parseAction :: Parser Action
-parseAction =
-      try parseLookAt
-  <|> try parseInteract
-  <|> parseLook
-  <|> parseInventory
-  <|> parsePanic
-  <|> parseHelp
-  <|> parseWait
-
-
-parseInput :: String -> Action
-parseInput =
-  fromRight (BadInput Nothing) . parse parseAction ""
 
 
 data UpdateResult
