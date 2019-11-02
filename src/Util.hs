@@ -13,8 +13,7 @@ prompt :: String -> IO String
 prompt message = do
   putStr message
   hFlush stdout
-  input <- getLine
-  return input
+  getLine
 
 
 printMaybe :: Maybe String -> IO ()
@@ -31,11 +30,12 @@ printLines = putStrLn . unlines
   
 
 maybeHead :: [a] -> Maybe a
-maybeHead s = if length s > 0
-              then
-                Just $ s !! 0
-              else
-                Nothing
+maybeHead s =
+  if length s > 0
+  then
+    Just $ s !! 0
+  else
+    Nothing
 
 
 (|>) :: a -> (a -> b) -> b
