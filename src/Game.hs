@@ -102,23 +102,24 @@ dispatchAction oldState action =
       NoChangeWithMessage $ fromMaybe "huh?" msg
 
 
+timesUp :: GameState -> Bool
+timesUp = (<= Time 0) . timeLeft
+
+
 loop :: GameState -> IO ()
 loop oldState
-  | timeLeft oldState <= Time 0 =
-      putStrLn "Times up! You died."
+  | timesUp oldState = putStrLn "Times up! You died."
   | otherwise = do
       action <- fmap parseInput $ prompt "What do you wanna do: "
       case dispatchAction oldState action of
-        NoChangeWithMessage msg ->
-          putStrLn msg >> loop oldState
+        NoChangeWithMessage msg -> putStrLn msg >> loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
               stateDiff = showStateDiff oldState newState'
               messages = unlines $ message:stateDiff
           putStrLn messages
           loop newState'
-        Terminate msg ->
-          putStrLn msg
+        Terminate msg -> putStrLn msg
 
 
 runGame :: IO ()
