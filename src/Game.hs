@@ -2,9 +2,8 @@ module Game
     ( runGame
     ) where
 
-import Util (prompt)
+import Util (prompt, (|>))
 import Control.Monad (liftM)
-import Control.Monad.State
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Either (fromRight)
 import qualified Data.Map.Strict as Map
@@ -32,7 +31,6 @@ data Label = Label String
 
 instance Show Label where
   show (Label l) = l
-
 
 type Inventory = (Map.Map Label Thing)
 
@@ -203,27 +201,21 @@ removeFromRoom thing oldState =
   in oldState { room = newRoom }
 
 
-dispatchThingAction :: Thing -> ThingAction -> State GameState UpdateResult
-dispatchThingAction thing action = do
-  case action of
-    Grab msg -> do
-      modify $ addToYou thing
-      modify $ removeFromRoom thing
-      newState <- get
-      return $ ChangedState newState msg
-    Inspect msg ->
-      get >>= \oldState -> return $ ChangedState oldState msg
-    ReplaceSelfWithThings msg things -> do
-      modify $ removeFromRoom thing
-      modify $ \gameState-> foldl (flip addToRoom) gameState things
-      newState <- get
-      return $ ChangedState newState msg
-
-
 updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
 updateStateWithThing oldState thing action =
-  let (updateResult, _) = runState (dispatchThingAction thing action) oldState
-  in updateResult
+  case action of
+    Grab msg ->
+      let newState = oldState
+                      |> addToYou thing
+                      |> removeFromRoom thing
+      in ChangedState newState msg
+    Inspect msg ->
+      ChangedState oldState msg
+    ReplaceSelfWithThings msg things ->
+      let newState = oldState
+                       |> removeFromRoom thing
+                       |> \gameState-> foldl (flip addToRoom) gameState things
+      in ChangedState newState msg
 
 
 updateState :: GameState -> UpdatingAction -> UpdateResult

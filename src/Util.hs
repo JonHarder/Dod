@@ -3,6 +3,7 @@ module Util
   , printMaybe
   , printLines
   , maybeHead
+  , (|>)
   ) where
 
 import System.IO
@@ -35,3 +36,7 @@ maybeHead s = if length s > 0
                 Just $ s !! 0
               else
                 Nothing
+
+
+(|>) :: a -> (a -> b) -> b
+a |> f = f a
