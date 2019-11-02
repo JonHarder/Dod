@@ -3,9 +3,20 @@ module InputParser
   where
 
 
-import Types
-import Actions
-import Text.ParserCombinators.Parsec (Parser, (<|>), anyToken, choice, eof, manyTill, try, string, space, parse)
+import Types (Label(..))
+import Actions (Action(..), UpdatingAction(..))
+import Text.ParserCombinators.Parsec
+  ( Parser
+  , (<|>)
+  , anyToken
+  , choice
+  , eof
+  , manyTill
+  , try
+  , string
+  , space
+  , parse
+  )
 import Control.Monad (liftM)
 import Data.Either (fromRight)
 
