@@ -123,16 +123,18 @@ updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
 updateStateWithThing oldState thing action =
   case action of
     Grab msg ->
-      let newState = oldState
-                      |> addToYou thing
-                      |> removeFromRoom thing
+      let newState =
+            oldState
+            |> addToYou thing
+            |> removeFromRoom thing
       in ChangedState newState msg
     Inspect msg ->
       ChangedState oldState msg
     ReplaceSelfWithThings msg things ->
-      let newState = oldState
-                       |> removeFromRoom thing
-                       |> \gameState-> foldl (flip addToRoom) gameState things
+      let newState =
+            oldState
+            |> removeFromRoom thing
+            |> \gameState-> foldl (flip addToRoom) gameState things
       in ChangedState newState msg
 
 
