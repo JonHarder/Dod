@@ -25,6 +25,7 @@ data Thing =
   Thing { thingDescription :: String
         , interaction :: ThingAction
         , label :: Label
+        , roomDescription :: Maybe String
         }
 
 instance Eq Thing where

@@ -1,7 +1,6 @@
 # goalz
 
 ## done
-- actually do things next time
 - things stuff
 - things define things and have themselves
 - get rid of state
