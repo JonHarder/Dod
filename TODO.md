@@ -13,6 +13,7 @@
   - use key
 - readline support
 - thing action :: gives you a thing
+- thing action (act specific thing)
 
 ## todo
 - lenses

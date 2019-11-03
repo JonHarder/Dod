@@ -85,6 +85,8 @@ updateStateWithThing oldState thing action =
             oldState
             |> \gameState -> foldl (flip addToYou) gameState things
       in ChangedState newState msg
+    TriggerActionOn triggeredThing thingAction ->
+      updateStateWithThing oldState triggeredThing thingAction
 
 
 -- |Tries to find the first thing from your inventory, the second from your inventory or the current

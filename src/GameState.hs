@@ -54,13 +54,15 @@ data ThingAction
   | TravelRoom String Room
   | Describe
   | GrabThings String [Thing]
+  | TriggerActionOn Thing ThingAction
   deriving (Eq, Show)
 
 
 addToYou :: Thing -> GameState -> GameState
 addToYou thing oldState =
   let oldYou = gYou oldState
-  in oldState { gYou = Map.insert (tLabel thing) thing oldYou }
+      newInventory = Map.insert (tLabel thing) thing oldYou
+  in oldState { gYou = newInventory }
 
 
 roomInventory :: GameState -> Inventory
