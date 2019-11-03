@@ -26,7 +26,7 @@ restOfLine :: Parser String
 restOfLine = manyTill anyToken eof
 
 word :: Parser String
-word = manyTill anyChar space
+word = manyTill anyChar ((space >> return ()) <|> eof)
 
 
 verb :: [String] -> a -> Parser a
@@ -47,7 +47,7 @@ binaryVerb :: String -> String -> (Label -> Label -> a) -> Parser a
 binaryVerb action preposition f = do
   _ <- string action >> space
   label1 <- liftM Label word
-  _ <- space >> string preposition >> space
+  _ <- string preposition >> space
   label2 <- liftM Label word
   return $ f label1 label2
 

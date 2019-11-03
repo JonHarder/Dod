@@ -42,7 +42,7 @@ initState =
         , tInteraction = Grab "you grab the thimble"
         , tLabel = Label "thimble"
         , tRoomDescription = Nothing
-        , tCombinations = Map.empty
+        , tCombinations = Map.fromList [(Label "door", ActOnThing2 (Inspect "You throw your thimble at the door, and watch it bounce off and roll in small circles on the ground. You pick it back up, feeling a little bit silly..."))]
         }
       box = Thing
         { tDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
