@@ -5,14 +5,15 @@ import qualified Data.Map.Strict as Map
 import Types
 
 data Room =
-  Room { rDescription :: String
+  Room { rShortDescription :: String
+       , rDescription :: String
        , rInventory :: Inventory
        }
   deriving Eq
 
 
 instance Show Room where
-  show = rDescription
+  show = rShortDescription
 
 
 data GameState = GameState

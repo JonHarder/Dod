@@ -16,24 +16,24 @@ black s = "\x1b[30m" ++ s ++ resetColor
 
 
 green :: String -> String
-green s = "\x1b[32" ++ s ++ resetColor
+green s = "\x1b[32m" ++ s ++ resetColor
 
 
 yellow :: String -> String
-yellow s = "\x1b[33" ++ s ++ resetColor
+yellow s = "\x1b[33m" ++ s ++ resetColor
 
 
 blue :: String -> String
-blue s = "\x1b[34" ++ s ++ resetColor
+blue s = "\x1b[34m" ++ s ++ resetColor
 
 
 magenta :: String -> String
-magenta s = "\x1b[35" ++ s ++ resetColor
+magenta s = "\x1b[35m" ++ s ++ resetColor
 
 
 cyan :: String -> String
-cyan s = "\x1b[36" ++ s ++ resetColor
+cyan s = "\x1b[36m" ++ s ++ resetColor
 
 
 white :: String -> String
-white s = "\x1b[37" ++ s ++ resetColor
+white s = "\x1b[37m" ++ s ++ resetColor

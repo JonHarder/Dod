@@ -1,15 +1,15 @@
 # goalz
 
-## done
+## todone
 - things stuff
 - things define things and have themselves
 - get rid of state
 - interact items to change current room
 - thingAction to add items to room
-
-## todo
 - derive room descriptions from room inventory
  - keep hidden items
+
+## todo
 - lenses
 - open door
 - use key

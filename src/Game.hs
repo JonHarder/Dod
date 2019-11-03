@@ -5,6 +5,7 @@ module Game
 import Types
 import Actions
 import GameState
+import qualified Color
 import Util (prompt, (|>))
 import InputParser (parseInput)
 import InitState (initState)
@@ -87,7 +88,7 @@ lookAtRoom :: Room -> String
 lookAtRoom room =
   let things = (rInventory room)
       descriptions = catMaybes (map tRoomDescription (Map.elems things))
-  in show room ++ "\n" ++ unlines descriptions
+  in rDescription room ++ "\n" ++ unlines descriptions
 
 
 dispatchAction :: GameState -> Action -> UpdateResult
@@ -116,7 +117,8 @@ loop :: GameState -> IO ()
 loop oldState
   | timesUp oldState = putStrLn "Times up! You died."
   | otherwise = do
-      action <- fmap parseInput $ prompt "What do you wanna do: "
+      putStrLn ""
+      action <- fmap parseInput $ prompt $ Color.green "What do you wanna do: "
       case dispatchAction oldState action of
         NoChangeWithMessage msg -> putStrLn msg >> loop oldState
         ChangedState newState message -> do
@@ -130,5 +132,5 @@ loop oldState
 
 runGame :: IO ()
 runGame = do
-  putStrLn "welcome!"
+  putStrLn $ show $ gRoom initState
   loop initState
