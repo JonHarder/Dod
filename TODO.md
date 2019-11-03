@@ -9,10 +9,10 @@
 - derive room descriptions from room inventory
  - keep hidden items
 - open door
+- binary verb
+  - use key
 
 ## todo
-- binary verb (defined, but parser doesn't work)
-  - use key
 - lenses
 - thingAction to change the room
   - replaceByLabel
