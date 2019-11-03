@@ -10,6 +10,7 @@ import Util (prompt, (|>))
 import InputParser (parseInput)
 import InitState (initState)
 import Data.Maybe (catMaybes, fromMaybe)
+import Control.Applicative ((<|>))
 import qualified Data.Map.Strict as Map
 
 
@@ -78,6 +79,14 @@ updateStateWithThing oldState thing action =
       in ChangedState newState msg
 
 
+findCombinableThings :: GameState -> Label -> Label -> Maybe (Thing, Thing, MultiThingAction)
+findCombinableThings gameState l1 l2 = do
+  thing1 <- findInInventory l1 (gYou gameState)
+  thing2 <- findInInventory l2 (roomInventory gameState) <|> findInInventory l2 (gYou gameState)
+  thingAction <- Map.lookup l2 $ tCombinations thing1
+  return (thing1, thing2, thingAction)
+
+
 updateState :: GameState -> UpdatingAction -> UpdateResult
 updateState oldState action =
   case action of
@@ -90,24 +99,11 @@ updateState oldState action =
         Just thing ->
           updateStateWithThing oldState thing (tInteraction thing)
     Combine l1@(Label s1) l2@(Label s2) ->
-      case findInInventory l1 (gYou oldState) of
+      case findCombinableThings oldState l1 l2 of
+        Just (thing1, thing2, thingAction) ->
+          updateStateWith2Things oldState thing1 thing2 thingAction
         Nothing ->
-          NoChangeWithMessage $ Color.red $ "You don't have a " ++ s1
-        Just thing1 ->
-          let mThingAction = Map.lookup l2 $ tCombinations thing1
-          in case mThingAction of
-            Just thingAction ->
-              case findInInventory l2 (gYou oldState) of
-                Nothing ->
-                  case findInInventory l2 (roomInventory oldState) of
-                    Just thing2 ->
-                      updateStateWith2Things oldState thing1 thing2 thingAction
-                    Nothing ->
-                      NoChangeWithMessage $ Color.red $ s2 ++ " isn't here"
-                Just thing2 ->
-                  updateStateWith2Things oldState thing1 thing2 thingAction
-            Nothing ->
-              NoChangeWithMessage $ Color.red $ "You can't use " ++ s1 ++ " on " ++ s2
+          NoChangeWithMessage $ Color.red $ "You can't use " ++ s1 ++ " on " ++ s2 ++ " (maybe you can't find one of them or they can't be combined)"
 
 
 lookAt :: Label -> Inventory -> String
