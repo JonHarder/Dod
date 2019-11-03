@@ -23,8 +23,8 @@ initState =
         }
       roomCryoStorage = Room
         { rShortDescription = "You are in a small room with the " ++ Color.blue "CryoPod" ++ " that you woke up from."
-         , rDescription = "TODO."
-         , rInventory = Map.fromList [(tLabel thingCryoPod, thingCryoPod)]
+         , rDescription = "As you take a deeper look around the Cryo Storage room, you notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
+         , rInventory = Map.fromList [(tLabel thingCryoPod, thingCryoPod), (tLabel thingCryoBody, thingCryoBody), (tLabel thingCryoStorageExitClosed, thingCryoStorageExitClosed), (tLabel thingCryoScanner, thingCryoScanner)]
          }
       thingCryoPod = Thing
         { tDescription = "The CryoPod 3001 that you woke up from."
@@ -33,34 +33,34 @@ initState =
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
         }
---      door = Thing
---        { tDescription = "A large, ornate, wooden door"
---        , tInteraction = TravelRoom "you walk through the door" room2
---        , tLabel = Label "door"
---        , tRoomDescription = Just $ "To the north, there is a large, ornate, wooden " ++ Color.blue "door"
---        , tCombinations = Map.empty
---        }
---      openBox = Thing
---        { tDescription = "Theres a thimble in there"
---        , tInteraction = Inspect "its just a box"
---        , tLabel = Label "box"
---        , tRoomDescription = Just $ "You see an open " ++ Color.blue "box" ++ " in the room"
---        , tCombinations = Map.empty
---        }
---      thimble = Thing
---        { tDescription = "its a thimble, in the box"
---        , tInteraction = Grab "you grab the thimble"
---        , tLabel = Label "thimble"
---        , tRoomDescription = Nothing
---        , tCombinations = Map.fromList [(Label "door", ActOnThing2 (Inspect "You throw your thimble at the door, and watch it bounce off and roll in small circles on the ground. You pick it back up, feeling a little bit silly..."))]
---        }
---      box = Thing
---        { tDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
---        , tInteraction = ReplaceSelfWithThings "You open the box." [openBox, thimble]
---        , tLabel = Label "box"
---        , tRoomDescription = Just $ "There is a " ++ Color.blue "box" ++ " in the corner of the room"
---        , tCombinations = Map.empty
---        }
+      thingCryoBody = Thing
+        { tDescription = "A smelly, blood covered pile of body parts."
+        , tInteraction = Inspect "The CryoPod seems familiar, but there doesn't seem to be anything left to discover here."
+        , tLabel = Label "body"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
+      thingCryoScanner = Thing
+        { tDescription = "An automatic sliding metal door."
+        , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
+        , tLabel = Label "door"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
+      thingCryoKeyCard = Thing
+        { tDescription = "A key card with a magnetic strip."
+        , tInteraction = Describe
+        , tLabel = Label "door"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
+      thingCryoStorageExitClosed = Thing
+        { tDescription = "An automatic sliding metal door."
+        , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
+        , tLabel = Label "door"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
   in GameState { gRoom = roomCryoPod
                , gYou = Map.empty
             , gTimeLeft = Time 10

@@ -78,6 +78,8 @@ updateStateWithThing oldState thing action =
     TravelRoom msg room ->
       let newState = oldState { gRoom = room }
       in ChangedState newState msg
+    Describe ->
+      NoChangeWithMessage $ tDescription thing
 
 
 -- |Tries to find the first thing from your inventory, the second from your inventory or the current
