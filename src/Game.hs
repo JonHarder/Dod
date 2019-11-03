@@ -56,6 +56,8 @@ updateStateWith2Things oldState thing1 thing2 action =
       updateStateWithThing oldState thing1 thingAction
     ActOnThing2 thingAction ->
       updateStateWithThing oldState thing2 thingAction
+    ActOnNothing msg ->
+      NoChangeWithMessage msg
 
 
 updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult

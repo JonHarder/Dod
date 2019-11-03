@@ -44,6 +44,7 @@ instance Show Thing where
 data MultiThingAction
   = ActOnThing1 ThingAction
   | ActOnThing2 ThingAction
+  | ActOnNothing String
   deriving (Eq)
 
 
