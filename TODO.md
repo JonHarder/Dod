@@ -14,12 +14,12 @@
 - readline support
 - thing action :: gives you a thing
 - thing action (act specific thing)
-
-## todo
-- lenses
 - thingAction to change the room
   - replaceByLabel
   - compound action
+
+## todo
+- lenses
 - look at should look through your inventory too
 
 ## stretch goalz
