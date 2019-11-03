@@ -78,6 +78,11 @@ updateStateWithThing oldState thing action =
     TravelRoom msg room ->
       let newState = oldState { gRoom = room }
       in ChangedState newState msg
+    GrabThings msg things ->
+      let newState =
+            oldState
+            |> \gameState -> foldl (flip addToYou) gameState things
+      in ChangedState newState msg
 
 
 -- |Tries to find the first thing from your inventory, the second from your inventory or the current

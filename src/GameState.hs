@@ -52,6 +52,7 @@ data ThingAction
   | Inspect String
   | ReplaceSelfWithThings String [Thing]
   | TravelRoom String Room
+  | GrabThings String [Thing]
   deriving (Eq, Show)
 
 

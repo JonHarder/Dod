@@ -12,13 +12,14 @@
 - binary verb
   - use key
 - readline support
+- thing action :: gives you a thing
 
 ## todo
 - lenses
 - thingAction to change the room
   - replaceByLabel
   - compound action
-- thing action :: gives you a thing
+- look at should look through your inventory too
 
 ## stretch goalz
 - yaml parser for state
