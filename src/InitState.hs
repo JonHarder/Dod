@@ -2,4 +2,4 @@ module InitState
   (initState)
   where
 
-import Levels.Test
+import Stories.Test

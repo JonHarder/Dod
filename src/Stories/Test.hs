@@ -1,4 +1,4 @@
-module Levels.Test where
+module Stories.Test where
 
 
 import GameState
