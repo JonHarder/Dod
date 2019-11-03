@@ -4,8 +4,10 @@ module InitState
 
 import Types
 import GameState
+import qualified Color
 
 import qualified Data.Map.Strict as Map
+
 
 initState :: GameState
 initState =
@@ -13,7 +15,7 @@ initState =
                  { tDescription = "There's a boat here, for some reason."
                  , tInteraction = Grab "you grab the boat somehow."
                  , tLabel = Label "boat"
-                 , tRoomDescription = Nothing
+                 , tRoomDescription = Just $ Color.red "There is a boat in the room."
                  }
       openBox = Thing
                 { tDescription = "Theres a thimble in there"

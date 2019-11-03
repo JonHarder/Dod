@@ -82,9 +82,13 @@ lookAt :: Label -> Inventory -> String
 lookAt thingLabel i =
   maybe ("couldn't find " ++ show thingLabel ++ " here.") show (findInInventory thingLabel i)
 
+
 lookAtRoom :: Room -> String
 lookAtRoom room =
-  show room
+  let things = (rInventory room)
+      descriptions = catMaybes (map tRoomDescription (Map.elems things))
+  in show room ++ "\n" ++ unlines descriptions
+
 
 dispatchAction :: GameState -> Action -> UpdateResult
 dispatchAction oldState action =
