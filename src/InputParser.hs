@@ -60,7 +60,7 @@ parseWait = verb ["wait"] (Update NoOp)
 
 
 parseInteract :: Parser Action
-parseInteract = unaryVerb ["interact", "grab", "take"] $ Update . Interact . Label
+parseInteract = unaryVerb ["open", "interact", "grab", "take"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action

@@ -8,10 +8,10 @@
 - thingAction to add items to room
 - derive room descriptions from room inventory
  - keep hidden items
+- open door
 
 ## todo
 - lenses
-- open door
 - use key
 - binary verb
 - thingAction to change the room
