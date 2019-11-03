@@ -11,12 +11,14 @@
 - open door
 - binary verb
   - use key
+- readline support
 
 ## todo
 - lenses
 - thingAction to change the room
   - replaceByLabel
   - compound action
+- thing action :: gives you a thing
 
 ## stretch goalz
 - yaml parser for state

@@ -6,15 +6,19 @@ module Util
   , (|>)
   ) where
 
-import System.IO
+import System.Console.Readline (readline, addHistory)
 import Data.Foldable (forM_)
 
 
 prompt :: String -> IO String
 prompt message = do
-  putStr message
-  hFlush stdout
-  getLine
+  input <- readline message
+  case input of
+    Just response -> do
+      addHistory response
+      return response
+    Nothing ->
+      return ""
 
 
 printMaybe :: Maybe String -> IO ()
