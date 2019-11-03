@@ -8,8 +8,9 @@ import GameState
 import qualified Color
 import Util (prompt, (|>))
 import InputParser (parseInput)
-import InitState (initState)
-import Data.Maybe (catMaybes, fromMaybe)
+import Stories.Types (beginStory)
+import Stories.Test (story)
+import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
 import Control.Applicative ((<|>))
 import qualified Data.Map.Strict as Map
 
@@ -115,8 +116,8 @@ lookAt thingLabel i =
 
 lookAtRoom :: Room -> String
 lookAtRoom room =
-  let things = (rInventory room)
-      descriptions = catMaybes (map tRoomDescription (Map.elems things))
+  let things = rInventory room
+      descriptions = mapMaybe tRoomDescription (Map.elems things)
   in rDescription room ++ "\n" ++ unlines descriptions
 
 
@@ -149,17 +150,15 @@ loop oldState
       putStrLn ""
       action <- fmap parseInput $ prompt $ Color.green "What do you wanna do: "
       case dispatchAction oldState action of
-        NoChangeWithMessage msg -> putStrLn msg >> loop oldState
+        NoChangeWithMessage msg -> putStr msg >> loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
               stateDiff = showStateDiff oldState newState'
               messages = unlines $ message:stateDiff
-          putStrLn messages
+          putStr messages
           loop newState'
         Terminate msg -> putStrLn msg
 
 
 runGame :: IO ()
-runGame = do
-  putStrLn $ show $ gRoom initState
-  loop initState
+runGame = beginStory story loop

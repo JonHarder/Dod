@@ -1,5 +1,5 @@
 module InitState
-  (initState)
+  (story)
   where
 
 import Stories.Test

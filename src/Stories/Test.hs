@@ -1,5 +1,6 @@
-module Stories.Test where
+module Stories.Test (story) where
 
+import Stories.Types
 
 import GameState
 import Color
@@ -63,3 +64,7 @@ initState =
                , gYou = Map.empty
             , gTimeLeft = Time 10
             }
+
+
+story :: Story
+story = Story "This is a test story" initState

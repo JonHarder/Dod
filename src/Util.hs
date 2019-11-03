@@ -7,6 +7,7 @@ module Util
   ) where
 
 import System.IO
+import Data.Foldable (forM_)
 
 
 prompt :: String -> IO String
@@ -18,11 +19,7 @@ prompt message = do
 
 printMaybe :: Maybe String -> IO ()
 printMaybe ma =
-  case ma of
-    Just a ->
-      putStrLn a
-    Nothing ->
-      return ()
+  forM_ ma putStrLn
 
 
 printLines :: [String] -> IO ()
@@ -31,9 +28,9 @@ printLines = putStrLn . unlines
 
 maybeHead :: [a] -> Maybe a
 maybeHead s =
-  if length s > 0
+  if not $ null s
   then
-    Just $ s !! 0
+    Just $ head s
   else
     Nothing
 

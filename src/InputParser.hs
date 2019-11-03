@@ -18,7 +18,7 @@ import Text.ParserCombinators.Parsec
   , space
   , parse
   )
-import Control.Monad (liftM)
+import Control.Monad (void)
 import Data.Either (fromRight)
 
 
@@ -26,7 +26,7 @@ restOfLine :: Parser String
 restOfLine = manyTill anyToken eof
 
 word :: Parser String
-word = manyTill anyChar ((space >> return ()) <|> eof)
+word = manyTill anyChar (void space <|> eof)
 
 
 verb :: [String] -> a -> Parser a
@@ -40,15 +40,15 @@ alias = choice . map string
 unaryVerb :: [String] -> (String -> a) -> Parser a
 unaryVerb s f = do
   _ <- alias s >> space
-  liftM f restOfLine
+  fmap f restOfLine
 
 
 binaryVerb :: String -> String -> (Label -> Label -> a) -> Parser a
 binaryVerb action preposition f = do
   _ <- string action >> space
-  label1 <- liftM Label word
+  label1 <- fmap Label word
   _ <- string preposition >> space
-  label2 <- liftM Label word
+  label2 <- fmap Label word
   return $ f label1 label2
 
 
