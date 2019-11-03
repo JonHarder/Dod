@@ -20,9 +20,16 @@ initState =
         , rDescription = "A small dingey dungeon, with a kiddy pool in the center, and a weird table in the corner."
         , rInventory = i
         }
+      oar = Thing
+        { tDescription = "It's an oar"
+        , tInteraction = Inspect "It's an oar."
+        , tLabel = Label "oar"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
       boat = Thing
         { tDescription = "There's a boat here, for some reason."
-        , tInteraction = Grab "you grab the boat somehow."
+        , tInteraction = GrabThings "you found an oar" [oar]
         , tLabel = Label "boat"
         , tRoomDescription = Just $ "There is a " ++ Color.blue "boat" ++ " in the room."
         , tCombinations = Map.empty

@@ -80,6 +80,11 @@ updateStateWithThing oldState thing action =
       in ChangedState newState msg
     Describe ->
       NoChangeWithMessage $ tDescription thing
+    GrabThings msg things ->
+      let newState =
+            oldState
+            |> \gameState -> foldl (flip addToYou) gameState things
+      in ChangedState newState msg
 
 
 -- |Tries to find the first thing from your inventory, the second from your inventory or the current

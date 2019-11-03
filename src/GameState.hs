@@ -53,6 +53,7 @@ data ThingAction
   | ReplaceSelfWithThings String [Thing]
   | TravelRoom String Room
   | Describe
+  | GrabThings String [Thing]
   deriving (Eq, Show)
 
 
