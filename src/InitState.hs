@@ -10,34 +10,34 @@ import qualified Data.Map.Strict as Map
 initState :: GameState
 initState =
   let boat = Thing
-                 { thingDescription = "There's a boat here, for some reason."
-                 , interaction = Grab "you grab the boat somehow."
-                 , label = Label "boat"
-                 , roomDescription = Nothing
+                 { tDescription = "There's a boat here, for some reason."
+                 , tInteraction = Grab "you grab the boat somehow."
+                 , tLabel = Label "boat"
+                 , tRoomDescription = Nothing
                  }
       openBox = Thing
-                { thingDescription = "Theres a thimble in there"
-                , interaction = Inspect "its just a box"
-                , label = Label "box"
-                 , roomDescription = Nothing
+                { tDescription = "Theres a thimble in there"
+                , tInteraction = Inspect "its just a box"
+                , tLabel = Label "box"
+                , tRoomDescription = Nothing
                 }
       thimble = Thing
-                { thingDescription = "its a thimble, in the box"
-                , interaction = Grab "you grab the thimble"
-                , label = Label "thimble"
-                , roomDescription = Nothing
+                { tDescription = "its a thimble, in the box"
+                , tInteraction = Grab "you grab the thimble"
+                , tLabel = Label "thimble"
+                , tRoomDescription = Nothing
                 }
       box = Thing
-                 { thingDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
-                 , interaction = ReplaceSelfWithThings "You open the box." [openBox, thimble]
-                 , label = Label "box"
-                , roomDescription = Nothing
+                 { tDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
+                 , tInteraction = ReplaceSelfWithThings "You open the box." [openBox, thimble]
+                 , tLabel = Label "box"
+                 , tRoomDescription = Nothing
                  }
-      i = Map.fromList [(label boat, boat), (label box, box)]
-  in GameState { room = Room
-                 { description = "the first room. boat? probably also a box"
-                 , inventory = i
+      i = Map.fromList [(tLabel boat, boat), (tLabel box, box)]
+  in GameState { gRoom = Room
+                 { rDescription = "the first room. boat? probably also a box"
+                 , rInventory = i
                  }
-               , you = Map.empty
-            , timeLeft = Time 10
+               , gYou = Map.empty
+            , gTimeLeft = Time 10
             }

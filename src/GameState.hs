@@ -5,34 +5,38 @@ import qualified Data.Map.Strict as Map
 import Types
 
 data Room =
-  Room { description :: String
-       , inventory :: Inventory
+  Room { rDescription :: String
+       , rInventory :: Inventory
        }
   deriving Eq
 
 
 instance Show Room where
-  show = description
+  show = rDescription
 
 
-data GameState = GameState { you :: Inventory, room :: Room, timeLeft :: Time }
+data GameState = GameState
+  { gYou :: Inventory
+  , gRoom :: Room
+  , gTimeLeft :: Time
+  }
   deriving (Eq)
 
 type Inventory = (Map.Map Label Thing)
 
 
 data Thing =
-  Thing { thingDescription :: String
-        , interaction :: ThingAction
-        , label :: Label
-        , roomDescription :: Maybe String
+  Thing { tDescription :: String
+        , tInteraction :: ThingAction
+        , tLabel :: Label
+        , tRoomDescription :: Maybe String
         }
 
 instance Eq Thing where
-  t1 == t2 = thingDescription t1 == thingDescription t2 && label t1 == label t2
+  t1 == t2 = tDescription t1 == tDescription t2 && tLabel t1 == tLabel t2
 
 instance Show Thing where
-  show = thingDescription
+  show = tDescription
 
 
 data ThingAction
@@ -44,18 +48,18 @@ data ThingAction
 
 addToYou :: Thing -> GameState -> GameState
 addToYou thing oldState =
-  let oldYou = you oldState
-  in oldState { you = Map.insert (label thing) thing oldYou }
+  let oldYou = gYou oldState
+  in oldState { gYou = Map.insert (tLabel thing) thing oldYou }
 
 
 roomInventory :: GameState -> Inventory
-roomInventory = inventory . room
+roomInventory = rInventory . gRoom
 
 
 addToRoom :: Thing -> GameState -> GameState
 addToRoom thing oldState =
-  let newRoom = (room oldState) { inventory = Map.insert (label thing) thing $ roomInventory oldState }
-  in oldState { room = newRoom }
+  let newRoom = (gRoom oldState) { rInventory = Map.insert (tLabel thing) thing $ roomInventory oldState }
+  in oldState { gRoom = newRoom }
 
 
 findInInventory :: Label -> Inventory -> Maybe Thing
@@ -64,6 +68,7 @@ findInInventory = Map.lookup
 
 removeFromRoom :: Thing -> GameState -> GameState
 removeFromRoom thing oldState =
-  let newInv = Map.delete (label thing) (roomInventory oldState)
-      newRoom = (room oldState) { inventory = newInv }
-  in oldState { room = newRoom }
+  let thingLabel = tLabel thing
+      newInv = Map.delete thingLabel (roomInventory oldState)
+      newRoom = (gRoom oldState) { rInventory = newInv }
+  in oldState { gRoom = newRoom }

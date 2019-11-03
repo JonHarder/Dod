@@ -20,15 +20,15 @@ data UpdateResult
 
 roomDiff :: GameState -> GameState -> Maybe String
 roomDiff oldState newState =
-  if room oldState /= room newState
-    then Just $ show $ room newState
+  if gRoom oldState /= gRoom newState
+    then Just $ show $ gRoom newState
     else Nothing
 
 
 timeDiff :: GameState -> GameState -> Maybe String
 timeDiff oldState newState =
-  if timeLeft oldState /= timeLeft newState
-    then Just $ show $ timeLeft newState
+  if gTimeLeft oldState /= gTimeLeft newState
+    then Just $ show $ gTimeLeft newState
   else
     Nothing
 
@@ -42,8 +42,8 @@ showStateDiff oldState newState =
 
 tickState :: GameState -> GameState
 tickState oldState =
-  let (Time t) = timeLeft oldState
-  in oldState { timeLeft = Time (t - 1) }
+  let (Time t) = gTimeLeft oldState
+  in oldState { gTimeLeft = Time (t - 1) }
 
 
 updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
@@ -61,7 +61,7 @@ updateStateWithThing oldState thing action =
       let newState =
             oldState
             |> removeFromRoom thing
-            |> \gameState-> foldl (flip addToRoom) gameState things
+            |> \gameState -> foldl (flip addToRoom) gameState things
       in ChangedState newState msg
 
 
@@ -75,23 +75,26 @@ updateState oldState action =
         Nothing ->
           NoChangeWithMessage "couldn't find that here"
         Just thing ->
-          updateStateWithThing oldState thing (interaction thing)
+          updateStateWithThing oldState thing (tInteraction thing)
 
 
 lookAt :: Label -> Inventory -> String
 lookAt thingLabel i =
   maybe ("couldn't find " ++ show thingLabel ++ " here.") show (findInInventory thingLabel i)
 
+lookAtRoom :: Room -> String
+lookAtRoom room =
+  show room
 
 dispatchAction :: GameState -> Action -> UpdateResult
 dispatchAction oldState action =
   case action of
     Look ->
-      NoChangeWithMessage $ show (room oldState)
+      NoChangeWithMessage $ lookAtRoom (gRoom oldState)
     LookAt thing ->
       NoChangeWithMessage $ lookAt thing (roomInventory oldState)
     Inventory ->
-      NoChangeWithMessage $ "you have: " ++ show (Map.keys (you oldState))
+      NoChangeWithMessage $ "you have: " ++ show (Map.keys (gYou oldState))
     Panic ->
       Terminate "you flip the fluff out"
     Update updatingAction ->
@@ -103,8 +106,7 @@ dispatchAction oldState action =
 
 
 timesUp :: GameState -> Bool
-timesUp = (<= Time 0) . timeLeft
-
+timesUp = (<= Time 0) . gTimeLeft
 
 loop :: GameState -> IO ()
 loop oldState
