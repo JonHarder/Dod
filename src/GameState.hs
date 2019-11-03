@@ -44,6 +44,7 @@ data ThingAction
   = Grab String
   | Inspect String
   | ReplaceSelfWithThings String [Thing]
+  | TravelRoom String Room
   deriving (Eq, Show)
 
 

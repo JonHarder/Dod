@@ -64,6 +64,9 @@ updateStateWithThing oldState thing action =
             |> removeFromRoom thing
             |> \gameState -> foldl (flip addToRoom) gameState things
       in ChangedState newState msg
+    TravelRoom msg room ->
+      let newState = oldState { gRoom = room }
+      in ChangedState newState msg
 
 
 updateState :: GameState -> UpdatingAction -> UpdateResult
