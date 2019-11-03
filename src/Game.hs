@@ -79,6 +79,8 @@ updateStateWithThing oldState thing action =
       in ChangedState newState msg
 
 
+-- |Tries to find the first thing from your inventory, the second from your inventory or the current
+-- room, and lastly tries to find the interaction between the things if they've been found.
 findCombinableThings :: GameState -> Label -> Label -> Maybe (Thing, Thing, MultiThingAction)
 findCombinableThings gameState l1 l2 = do
   thing1 <- findInInventory l1 (gYou gameState)
