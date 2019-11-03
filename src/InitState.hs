@@ -2,4 +2,4 @@ module InitState
   (story)
   where
 
-import Stories.Test
+import Stories.CryoSleep

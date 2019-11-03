@@ -9,7 +9,7 @@ import qualified Color
 import Util (prompt, (|>))
 import InputParser (parseInput)
 import Stories.Types (beginStory)
-import Stories.Test (story)
+import InitState (story)
 import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
 import Control.Applicative ((<|>))
 import qualified Data.Map.Strict as Map
