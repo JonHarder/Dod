@@ -41,8 +41,8 @@ initState =
         , tCombinations = Map.empty
         }
       thingCryoScanner = Thing
-        { tDescription = "An automatic sliding metal door."
-        , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
+        { tDescription = "A card scanner that probably controls the door."
+        , tInteraction = Describe
         , tLabel = Label "scanner"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
