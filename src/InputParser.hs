@@ -9,6 +9,7 @@ import Text.ParserCombinators.Parsec
   ( Parser
   , (<|>)
   , anyToken
+  , anyChar
   , choice
   , eof
   , manyTill
@@ -24,6 +25,9 @@ import Data.Either (fromRight)
 restOfLine :: Parser String
 restOfLine = manyTill anyToken eof
 
+word :: Parser String
+word = manyTill anyChar space
+
 
 verb :: [String] -> a -> Parser a
 verb s a = alias s >> eof >> return a
@@ -37,6 +41,15 @@ unaryVerb :: [String] -> (String -> a) -> Parser a
 unaryVerb s f = do
   _ <- alias s >> space
   liftM f restOfLine
+
+
+binaryVerb :: String -> String -> (Label -> Label -> a) -> Parser a
+binaryVerb action preposition f = do
+  _ <- string action >> space
+  label1 <- liftM Label word
+  _ <- space >> string preposition >> space
+  label2 <- liftM Label word
+  return $ f label1 label2
 
 
 parseLook :: Parser Action
@@ -59,6 +72,10 @@ parseWait :: Parser Action
 parseWait = verb ["wait"] (Update NoOp)
 
 
+parseCombine :: Parser Action
+parseCombine = binaryVerb "use" "on" (\l1 l2 -> Update (Combine l1 l2))
+
+
 parseInteract :: Parser Action
 parseInteract = unaryVerb ["open", "interact", "grab", "take"] $ Update . Interact . Label
 
@@ -71,6 +88,7 @@ parseAction :: Parser Action
 parseAction =
       try parseLookAt
   <|> try parseInteract
+  <|> parseCombine
   <|> parseLook
   <|> parseInventory
   <|> parsePanic

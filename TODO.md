@@ -11,9 +11,9 @@
 - open door
 
 ## todo
+- binary verb (defined, but parser doesn't work)
+  - use key
 - lenses
-- use key
-- binary verb
 - thingAction to change the room
   - replaceByLabel
   - compound action

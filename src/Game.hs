@@ -47,6 +47,15 @@ tickState oldState =
   in oldState { gTimeLeft = Time (t - 1) }
 
 
+updateStateWith2Things :: GameState -> Thing -> Thing -> MultiThingAction -> UpdateResult
+updateStateWith2Things oldState thing1 thing2 action =
+  case action of
+    ActOnThing1 thingAction ->
+      updateStateWithThing oldState thing1 thingAction
+    ActOnThing2 thingAction ->
+      updateStateWithThing oldState thing2 thingAction
+
+
 updateStateWithThing :: GameState -> Thing -> ThingAction -> UpdateResult
 updateStateWithThing oldState thing action =
   case action of
@@ -77,9 +86,28 @@ updateState oldState action =
     Interact l ->
       case findInInventory l (roomInventory oldState) of
         Nothing ->
-          NoChangeWithMessage "couldn't find that here"
+          NoChangeWithMessage $ Color.red "couldn't find that here"
         Just thing ->
           updateStateWithThing oldState thing (tInteraction thing)
+    Combine l1@(Label s1) l2@(Label s2) ->
+      case findInInventory l1 (gYou oldState) of
+        Nothing ->
+          NoChangeWithMessage $ Color.red $ "You don't have a " ++ s1
+        Just thing1 ->
+          let mThingAction = Map.lookup l2 $ tCombinations thing1
+          in case mThingAction of
+            Just thingAction ->
+              case findInInventory l2 (gYou oldState) of
+                Nothing ->
+                  case findInInventory l2 (roomInventory oldState) of
+                    Just thing2 ->
+                      updateStateWith2Things oldState thing1 thing2 thingAction
+                    Nothing ->
+                      NoChangeWithMessage $ Color.red $ s2 ++ " isn't here"
+                Just thing2 ->
+                  updateStateWith2Things oldState thing1 thing2 thingAction
+            Nothing ->
+              NoChangeWithMessage $ Color.red $ "You can't use " ++ s1 ++ " on " ++ s2
 
 
 lookAt :: Label -> Inventory -> String
@@ -108,7 +136,7 @@ dispatchAction oldState action =
     Update updatingAction ->
       updateState oldState updatingAction
     Help ->
-      NoChangeWithMessage "commands: look, interact, wait, help, panic"
+      NoChangeWithMessage $ "commands: " ++ Color.green "look" ++ ", interact, wait, help, panic"
     BadInput msg ->
       NoChangeWithMessage $ fromMaybe "huh?" msg
 

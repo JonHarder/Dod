@@ -29,6 +29,7 @@ type Inventory = (Map.Map Label Thing)
 data Thing =
   Thing { tDescription :: String
         , tInteraction :: ThingAction
+        , tCombinations :: Map.Map Label MultiThingAction
         , tLabel :: Label
         , tRoomDescription :: Maybe String
         }
@@ -38,6 +39,12 @@ instance Eq Thing where
 
 instance Show Thing where
   show = tDescription
+
+
+data MultiThingAction
+  = ActOnThing1 ThingAction
+  | ActOnThing2 ThingAction
+  deriving (Eq)
 
 
 data ThingAction

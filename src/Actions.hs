@@ -6,6 +6,7 @@ import Types
 data UpdatingAction
   = NoOp
   | Interact Label
+  | Combine Label Label
   deriving (Eq, Show)
 
 
