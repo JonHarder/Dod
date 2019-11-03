@@ -1,3 +1,6 @@
 .stack-work/
 Dod.cabal
 *~
+*.iml
+.idea/
+out/
