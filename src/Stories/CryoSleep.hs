@@ -22,7 +22,7 @@ initState =
         , tCombinations = Map.empty
         }
       roomCryoStorage = Room
-        { rShortDescription = "You are in a small room with the " ++ Color.blue "CryoPod" ++ " that you woke up from."
+        { rShortDescription = "You are in a small room with the " ++ Color.blue "CryoPod" ++ " that you woke up from. You should " ++ Color.green "look" ++ " around some more to see if you can find anything else in this room."
          , rDescription = "As you take a deeper look around the Cryo Storage room, you notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
          , rInventory = Map.fromList [(tLabel thingCryoPod, thingCryoPod), (tLabel thingCryoBody, thingCryoBody), (tLabel thingCryoStorageExitClosed, thingCryoStorageExitClosed), (tLabel thingCryoScanner, thingCryoScanner)]
          }
@@ -35,7 +35,7 @@ initState =
         }
       thingCryoBody = Thing
         { tDescription = "A smelly, blood covered pile of body parts."
-        , tInteraction = Inspect "The CryoPod seems familiar, but there doesn't seem to be anything left to discover here."
+        , tInteraction = GrabThings ("You carefully dig through the body, avoiding touching more than you have to. You find a " ++ Color.blue "keycard" ++ " in the pockets of the body.") [thingCryoKeyCard]
         , tLabel = Label "body"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
@@ -43,24 +43,39 @@ initState =
       thingCryoScanner = Thing
         { tDescription = "An automatic sliding metal door."
         , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
-        , tLabel = Label "door"
+        , tLabel = Label "scanner"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
         }
       thingCryoKeyCard = Thing
         { tDescription = "A key card with a magnetic strip."
         , tInteraction = Describe
-        , tLabel = Label "door"
+        , tLabel = Label "keycard"
         , tRoomDescription = Nothing
-        , tCombinations = Map.empty
+        , tCombinations = Map.fromList
+          [ (tLabel thingCryoScanner, ActOnThing2 $ TriggerActionOn thingCryoStorageExitClosed $ ReplaceSelfWithThings "You swipe the card on the door, and it slides open" [thingCryoStorageExitOpened] )
+          , (tLabel thingCryoStorageExitClosed, ActOnNothing $ "Try using the " ++ Color.blue "keycard" ++ " on the " ++ Color.blue "scanner" ++ " instead.")
+          ]
         }
       thingCryoStorageExitClosed = Thing
-        { tDescription = "An automatic sliding metal door."
+        { tDescription = "An automatic sliding metal door that is closed."
         , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
         , tLabel = Label "door"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
         }
+      thingCryoStorageExitOpened = Thing
+        { tDescription = "An automatic sliding metal door that is open."
+        , tInteraction = TravelRoom "You step through the open door." roomHallway
+        , tLabel = Label "door"
+        , tRoomDescription = Nothing
+        , tCombinations = Map.empty
+        }
+      roomHallway = Room
+        { rShortDescription = "A small hallway."
+         , rDescription = "As you take a deeper look around the Cryo Storage room, you notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
+         , rInventory = Map.empty
+         }
   in GameState { gRoom = roomCryoPod
                , gYou = Map.empty
             , gTimeLeft = Time 10
