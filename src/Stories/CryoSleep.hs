@@ -16,14 +16,14 @@ initState =
         }
       thingButton = Thing
         { tDescription = "A large glowing button that says \"Open\", and is covered with a thin layer of frost"
-        , tInteraction = TravelRoom "Pushing the button causes the glass to slide off the side, opening your Pod. You sit up, and feel aweful. Something must have gone wrong with your Pod. Slowly, you coax your stiff joints into motion, and get out of your pod.\n\nNow that you're upright, and your vision is no longer obscured by the frosted glass, you begin to take in the room you in which you find yourself." roomCryoStorage
+        , tInteraction = TravelRoom "Pushing the button causes the glass to slide off the side, opening your Pod. You sit up, and immediately wich you hadn't as you try to avoid vomiting. You try to think back to what you were told about waking up from cryosleep, though only faint memories greet you, you're certain this is not what it's supposed to be like. Slowly, you coax your stiff joints into motion, and get out of your pod.\n\nNow that you're upright, and your vision is no longer obscured by the frosted glass, you begin to take in the room you in which you find yourself." roomCryoStorage
         , tLabel = Label "button"
         , tRoomDescription = Just $ "To your right is a " ++ Color.blue "button" ++ ". If you " ++ Color.green "interact" ++ " with it the CryoPod should open."
         , tCombinations = Map.empty
         }
       roomCryoStorage = Room
         { rShortDescription = "You are in a small room with the " ++ Color.blue "CryoPod" ++ " that you woke up from. You should " ++ Color.green "look" ++ " around some more to see if you can find anything else in this room."
-         , rDescription = "As your vision begins to clarify, you " ++ Color.green "look" ++ " around the Cryo Storage room. You notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
+         , rDescription = "You " ++ Color.green "look" ++ " around the Cryo Storage room. You notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heap. There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
          , rInventory = Map.fromList [(tLabel thingCryoPod, thingCryoPod), (tLabel thingCryoBody, thingCryoBody), (tLabel thingCryoStorageExitClosed, thingCryoStorageExitClosed), (tLabel thingCryoScanner, thingCryoScanner)]
          }
       thingCryoPod = Thing
@@ -41,34 +41,34 @@ initState =
         , tCombinations = Map.empty
         }
       thingCryoScanner = Thing
-        { tDescription = "You see a pedastal next to the " ++ Color.blue "door" ++ ". In the center of it's face, there is a slight indentation which is likely where a keycard would go.  Above the indentation, in bold, red lettering, you see the message \"Authorized Personelle only\""
-        , tInteraction = Inspect "You look around for any buttons, or, barring that, a panel you can remove to try and short circuit the scanner, to no avail."
+        { tDescription = "You see a pedestal next to the " ++ Color.blue "door" ++ ". In the center of it's face, there is a slight indentation which is likely where a keycard would go.  Above the indentation, in bold, red lettering, you see the message \"Authorized Personelle only\""
+        , tInteraction = Inspect "You look around for any buttons, or barring that, a panel you can remove to try and short circuit the scanner, to no avail."
         , tLabel = Label "scanner"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
         }
       thingCryoKeyCard = Thing
-        { tDescription = "A key card with a magnetic strip."
+        { tDescription = "A key card with a magnetic strip. Perhaps you could " ++ Color.green "use" ++ " it " ++ Color.green "on" ++ " the " ++ Color.blue "scanner" ++ "."
         , tInteraction = Describe
         , tLabel = Label "keycard"
         , tRoomDescription = Nothing
         , tCombinations = Map.fromList
-          [ (tLabel thingCryoScanner, ActOnThing2 $ TriggerActionOn thingCryoStorageExitClosed $ ReplaceSelfWithThings "You swipe the card on the door, and it slides open" [thingCryoStorageExitOpened] )
+          [ (tLabel thingCryoScanner, ActOnThing2 $ TriggerActionOn thingCryoStorageExitClosed $ ReplaceSelfWithThings "You place the keycard into the indentation in the scanner. You hear a faint ding and the door slides open." [thingCryoStorageExitOpened] )
           , (tLabel thingCryoStorageExitClosed, ActOnNothing $ "Try using the " ++ Color.blue "keycard" ++ " on the " ++ Color.blue "scanner" ++ " instead.")
           ]
         }
       thingCryoStorageExitClosed = Thing
         { tDescription = "An automatic sliding metal door that is closed."
-        , tInteraction = Inspect $ "A solid metal door. It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
+        , tInteraction = Inspect $ "It doesn't seem like you'll be able to force it open. You'll have to gain acess through the card " ++ Color.blue "scanner" ++ "."
         , tLabel = Label "door"
-        , tRoomDescription = Nothing
+        , tRoomDescription = Just $ "At the far end of the room, you see a large, metal " ++ Color.blue "door" ++ ", firmly shut"
         , tCombinations = Map.empty
         }
       thingCryoStorageExitOpened = Thing
         { tDescription = "An automatic sliding metal door that is open."
         , tInteraction = TravelRoom "You step through the open door." roomHallway
         , tLabel = Label "door"
-        , tRoomDescription = Nothing
+        , tRoomDescription = Just $ "At the far end of the room, you see a large, open space, where the " ++ Color.blue "door" ++ " slid open."
         , tCombinations = Map.empty
         }
       roomHallway = Room
