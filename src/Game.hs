@@ -36,13 +36,7 @@ timeDiff oldState newState =
     Nothing
 
 
-showStateDiff :: GameState -> GameState -> [String]
-showStateDiff oldState newState =
-  let funcs = [ roomDiff, timeDiff ]
-      diffs = fmap (\f -> f oldState newState) funcs
-  in catMaybes diffs
-
-
+-- |Decrement the time left of the game by one
 tickState :: GameState -> GameState
 tickState oldState =
   let (Time t) = gTimeLeft oldState
@@ -157,6 +151,7 @@ dispatchAction oldState action =
 timesUp :: GameState -> Bool
 timesUp = (<= Time 0) . gTimeLeft
 
+
 loop :: GameState -> IO ()
 loop oldState
   | timesUp oldState = putStrLn "Times up! You died."
@@ -164,14 +159,15 @@ loop oldState
       putStrLn ""
       action <- fmap parseInput $ prompt $ Color.green "What do you wanna do: "
       case dispatchAction oldState action of
-        NoChangeWithMessage msg -> putStr msg >> loop oldState
+        NoChangeWithMessage msg -> do
+          putStrLn msg
+          loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
-              stateDiff = showStateDiff oldState newState'
-              messages = unlines $ message:stateDiff
-          putStr messages
+          putStrLn message
           loop newState'
-        Terminate msg -> putStrLn msg
+        Terminate msg ->
+          putStrLn msg
 
 
 runGame :: IO ()

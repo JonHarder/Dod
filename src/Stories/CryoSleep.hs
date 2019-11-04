@@ -16,14 +16,14 @@ initState =
         }
       thingButton = Thing
         { tDescription = "A large glowing button that says \"Open\", and is covered with a thin layer of frost"
-        , tInteraction = TravelRoom "Pushing the button causes the glass to slide off the side, opening your Pod. You sit up, and feel aweful. Something must have gone wrong with your Pod." roomCryoStorage
+        , tInteraction = TravelRoom "Pushing the button causes the glass to slide off the side, opening your Pod. You sit up, and feel aweful. Something must have gone wrong with your Pod. Slowly, you coax your stiff joints into motion, and get out of your pod.\n\nNow that you're upright, and your vision is no longer obscured by the frosted glass, you begin to take in the room you in which you find yourself." roomCryoStorage
         , tLabel = Label "button"
         , tRoomDescription = Just $ "To your right is a " ++ Color.blue "button" ++ ". If you " ++ Color.green "interact" ++ " with it the CryoPod should open."
         , tCombinations = Map.empty
         }
       roomCryoStorage = Room
         { rShortDescription = "You are in a small room with the " ++ Color.blue "CryoPod" ++ " that you woke up from. You should " ++ Color.green "look" ++ " around some more to see if you can find anything else in this room."
-         , rDescription = "As you take a deeper look around the Cryo Storage room, you notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
+         , rDescription = "As your vision begins to clarify, you " ++ Color.green "look" ++ " around the Cryo Storage room. You notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
          , rInventory = Map.fromList [(tLabel thingCryoPod, thingCryoPod), (tLabel thingCryoBody, thingCryoBody), (tLabel thingCryoStorageExitClosed, thingCryoStorageExitClosed), (tLabel thingCryoScanner, thingCryoScanner)]
          }
       thingCryoPod = Thing
@@ -41,8 +41,8 @@ initState =
         , tCombinations = Map.empty
         }
       thingCryoScanner = Thing
-        { tDescription = "A card scanner that probably controls the door."
-        , tInteraction = Describe
+        { tDescription = "You see a pedastal next to the " ++ Color.blue "door" ++ ". In the center of it's face, there is a slight indentation which is likely where a keycard would go.  Above the indentation, in bold, red lettering, you see the message \"Authorized Personelle only\""
+        , tInteraction = Inspect "You look around for any buttons, or, barring that, a panel you can remove to try and short circuit the scanner, to no avail."
         , tLabel = Label "scanner"
         , tRoomDescription = Nothing
         , tCombinations = Map.empty
