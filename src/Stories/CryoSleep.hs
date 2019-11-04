@@ -73,7 +73,7 @@ initState =
         }
       roomHallway = Room
         { rShortDescription = "A small hallway."
-         , rDescription = "As you take a deeper look around the Cryo Storage room, you notice a bloody, dismemebered, " ++ Color.blue "body" ++ " in a heep just inside a closed " ++ Color.blue "door" ++ ". There is also a glowing blue card " ++ Color.blue "scanner" ++ " next to the door."
+         , rDescription = "A small hallway adjoining your cryopod storage room, and the room ahead."
          , rInventory = Map.empty
          }
   in GameState { gRoom = roomCryoPod
