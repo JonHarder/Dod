@@ -3,11 +3,13 @@ module Util
   , printMaybe
   , printLines
   , maybeHead
+  , firstJust
   , (|>)
   ) where
 
 import System.Console.Readline (readline, addHistory)
 import Data.Foldable (forM_)
+import Data.Maybe (mapMaybe)
 
 
 prompt :: String -> IO String
@@ -28,6 +30,11 @@ printMaybe ma =
 
 printLines :: [String] -> IO ()
 printLines = putStrLn . unlines
+
+
+firstJust :: (a -> Maybe b) -> [a] -> Maybe b
+firstJust f =
+  maybeHead . mapMaybe f
   
 
 maybeHead :: [a] -> Maybe a

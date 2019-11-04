@@ -6,7 +6,7 @@ import Types
 import Actions
 import GameState
 import qualified Color
-import Util (prompt, (|>))
+import Util (firstJust, prompt, (|>))
 import InputParser (parseInput)
 import Stories.Types (beginStory)
 import InitState (story)
@@ -120,15 +120,18 @@ updateState oldState action =
           NoChangeWithMessage $ Color.red $ "You can't use " ++ s1 ++ " on " ++ s2 ++ " (maybe you can't find one of them or they can't be combined)"
 
 
-lookAt :: Label -> Inventory -> String
+lookAt :: Label -> [Inventory] -> String
 lookAt thingLabel i =
-  maybe ("couldn't find " ++ show thingLabel ++ " here.") show (findInInventory thingLabel i)
+  let found = firstJust (findInInventory thingLabel) i
+  in maybe ("couldn't find " ++ Color.blue (show thingLabel) ++ " here.") show found
 
 
 lookAtRoom :: Room -> String
 lookAtRoom room =
   let things = rInventory room
-      descriptions = mapMaybe tRoomDescription (Map.elems things)
+      descriptions = things
+                     |> Map.elems
+                     |> mapMaybe tRoomDescription
   in rDescription room ++ "\n" ++ unlines descriptions
 
 
@@ -137,8 +140,8 @@ dispatchAction oldState action =
   case action of
     Look ->
       NoChangeWithMessage $ lookAtRoom (gRoom oldState)
-    LookAt thing ->
-      NoChangeWithMessage $ lookAt thing (roomInventory oldState)
+    LookAt label ->
+      NoChangeWithMessage $ lookAt label [roomInventory oldState, gYou oldState]
     Inventory ->
       NoChangeWithMessage $ "you have: " ++ show (Map.keys (gYou oldState))
     Panic ->
