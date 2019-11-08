@@ -3,6 +3,7 @@
 ## todo
 - lenses
 - story based time event messages (with X time left, print this message, with Y time left, print message)
+- "type" command
 
 ## todone
 - things stuff
