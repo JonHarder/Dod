@@ -7,26 +7,25 @@ module Util
   , (|>)
   ) where
 
-import System.Console.Readline (readline, addHistory)
+import System.Console.Haskeline (InputT, defaultSettings, getInputLine, outputStr, runInputT)
 import Data.Foldable (forM_)
 import Data.Maybe (mapMaybe)
-
-
-prompt :: String -> IO String
-prompt message = do
-  input <- readline message
-  case input of
-    Just response -> do
-      addHistory response
-      return response
-    Nothing ->
-      return ""
 
 
 printMaybe :: Maybe String -> IO ()
 printMaybe ma =
   forM_ ma putStrLn
 
+
+prompt :: String -> InputT IO String
+prompt msg = do
+  outputStr msg
+  i <- getInputLine ""
+  case i of
+    Nothing ->
+      return ""
+    Just input ->
+      return input
 
 printLines :: [String] -> IO ()
 printLines = putStrLn . unlines

@@ -5,14 +5,16 @@ module Game
 import Types
 import Actions
 import GameState
-import qualified Color
+import Color
 import Util (firstJust, prompt, (|>))
 import InputParser (parseInput)
 import Stories.Types (beginStory)
 import InitState (story)
-import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
+
 import Control.Applicative ((<|>))
+import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
 import qualified Data.Map.Strict as Map
+import System.Console.Haskeline
 
 
 data UpdateResult
@@ -103,7 +105,7 @@ updateState oldState action =
     Interact l ->
       case findInInventory l (roomInventory oldState) of
         Nothing ->
-          NoChangeWithMessage $ Color.red "couldn't find that here"
+          NoChangeWithMessage $ red "couldn't find that here"
         Just thing ->
           updateStateWithThing oldState thing (tInteraction thing)
     Combine l1@(Label s1) l2@(Label s2) ->
@@ -111,13 +113,13 @@ updateState oldState action =
         Just (thing1, thing2, thingAction) ->
           updateStateWith2Things oldState thing1 thing2 thingAction
         Nothing ->
-          NoChangeWithMessage $ Color.red $ "You can't use " ++ s1 ++ " on " ++ s2 ++ " (maybe you can't find one of them or they can't be combined)"
+          NoChangeWithMessage $ red $ "You can't use " ++ s1 ++ " on " ++ s2 ++ " (maybe you can't find one of them or they can't be combined)"
 
 
 lookAt :: Label -> [Inventory] -> String
 lookAt thingLabel i =
   let found = firstJust (findInInventory thingLabel) i
-  in maybe ("couldn't find " ++ Color.blue (show thingLabel) ++ " here.") show found
+  in maybe ("couldn't find " ++ blue (show thingLabel) ++ " here.") show found
 
 
 lookAtRoom :: Room -> String
@@ -143,7 +145,7 @@ dispatchAction oldState action =
     Update updatingAction ->
       updateState oldState updatingAction
     Help ->
-      NoChangeWithMessage $ "commands: " ++ Color.green "look" ++ ", interact, wait, help, panic"
+      NoChangeWithMessage $ "commands: " ++ green "look" ++ ", interact, wait, help, panic"
     BadInput msg ->
       NoChangeWithMessage $ fromMaybe "huh?" msg
 
@@ -152,23 +154,23 @@ timesUp :: GameState -> Bool
 timesUp = (<= Time 0) . gTimeLeft
 
 
-loop :: GameState -> IO ()
+loop :: GameState -> InputT IO ()
 loop oldState
-  | timesUp oldState = putStrLn "Times up! You died."
+  | timesUp oldState = outputStrLn "Times up! You died."
   | otherwise = do
-      putStrLn ""
-      action <- fmap parseInput $ prompt $ Color.green "What do you wanna do: "
+      outputStrLn ""
+      action <- fmap parseInput $ prompt (green "What do you want to do? ")
       case dispatchAction oldState action of
         NoChangeWithMessage msg -> do
-          putStrLn msg
+          outputStrLn msg
           loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
-          putStrLn message
+          outputStrLn message
           loop newState'
         Terminate msg ->
-          putStrLn msg
+          outputStrLn msg
 
 
 runGame :: IO ()
-runGame = beginStory story loop
+runGame = runInputT defaultSettings $ beginStory story loop
