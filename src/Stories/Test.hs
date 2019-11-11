@@ -67,10 +67,12 @@ initState =
         , (tLabel box, box)
         , (tLabel door, door)
         ]
-  in GameState { gRoom = room1
-               , gYou = Map.empty
-            , gTimeLeft = Time 10
-            }
+  in GameState
+     { gRoom = room1
+     , gYou = Map.empty
+     , gTimeLeft = Time 10
+     , gEvents = Map.empty
+     }
 
 
 story :: Story

@@ -166,6 +166,11 @@ loop oldState
           loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
+          case currentEvent newState' of
+            Nothing ->
+              return ()
+            Just event ->
+              outputStrLn event
           outputStrLn message
           loop newState'
         Terminate msg ->

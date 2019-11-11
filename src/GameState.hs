@@ -1,6 +1,7 @@
 module GameState where
 
 import qualified Data.Map.Strict as Map
+import Data.Map.Strict (Map)
 
 import Types
 
@@ -16,20 +17,28 @@ instance Show Room where
   show = rShortDescription
 
 
+type Event = String
+
 data GameState = GameState
   { gYou :: Inventory
   , gRoom :: Room
   , gTimeLeft :: Time
+  , gEvents :: Map Time Event
   }
   deriving (Eq)
 
-type Inventory = (Map.Map Label Thing)
+
+currentEvent :: GameState -> Maybe Event
+currentEvent gameState =
+  Map.lookup (gTimeLeft gameState) (gEvents gameState)
+
+type Inventory = (Map Label Thing)
 
 
 data Thing =
   Thing { tDescription :: String
         , tInteraction :: ThingAction
-        , tCombinations :: Map.Map Label MultiThingAction
+        , tCombinations :: Map Label MultiThingAction
         , tLabel :: Label
         , tRoomDescription :: Maybe String
         }

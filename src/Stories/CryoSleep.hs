@@ -76,10 +76,12 @@ initState =
          , rDescription = "A small hallway adjoining your cryopod storage room, and the room ahead."
          , rInventory = Map.empty
          }
-  in GameState { gRoom = roomCryoPod
-               , gYou = Map.empty
-            , gTimeLeft = Time 10
-            }
+  in GameState
+     { gRoom = roomCryoPod
+     , gYou = Map.empty
+     , gTimeLeft = Time 10
+     , gEvents = Map.fromList [(Time 5, "Suddenly your knees buckle, and you stumble, your hand reaches out to the nearby wall to steady yourself.")]
+     }
 
 story :: Story
 story = Story "This is a test story" initState
