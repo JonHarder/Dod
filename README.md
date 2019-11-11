@@ -2,7 +2,6 @@
 
 ## todo
 - lenses
-- story based time event messages (with X time left, print this message, with Y time left, print message)
 - "type" command
 
 ## todone
@@ -23,6 +22,7 @@
   - replaceByLabel
   - compound action
 - look at should look through your inventory too
+- story based time event messages (with X time left, print this message, with Y time left, print message)
 
 ## stretch goalz
 - yaml parser for state
