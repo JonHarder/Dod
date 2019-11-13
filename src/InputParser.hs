@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module InputParser
   (parseInput)
   where
@@ -20,6 +21,7 @@ import Text.ParserCombinators.Parsec
   )
 import Control.Monad (void)
 import Data.Either (fromRight)
+import Data.Text (pack)
 
 
 restOfLine :: Parser String
@@ -46,9 +48,9 @@ unaryVerb s f = do
 binaryVerb :: String -> String -> (Label -> Label -> a) -> Parser a
 binaryVerb action preposition f = do
   _ <- string action >> space
-  label1 <- fmap Label word
+  label1 <- fmap (Label . pack) word
   _ <- string preposition >> space
-  label2 <- fmap Label word
+  label2 <- fmap (Label . pack) word
   return $ f label1 label2
 
 
@@ -57,7 +59,7 @@ parseLook = verb ["look"] Look
 
 
 parseLookAt :: Parser Action
-parseLookAt = unaryVerb ["look"] $ LookAt . Label
+parseLookAt = unaryVerb ["look"] $ LookAt . Label . pack
 
 
 parsePanic :: Parser Action
@@ -77,7 +79,7 @@ parseCombine = binaryVerb "use" "on" (\l1 l2 -> Update (Combine l1 l2))
 
 
 parseInteract :: Parser Action
-parseInteract = unaryVerb ["open", "interact", "grab", "take"] $ Update . Interact . Label
+parseInteract = unaryVerb ["open", "interact", "grab", "take"] $ Update . Interact . Label . pack
 
 
 parseInventory :: Parser Action

@@ -2,9 +2,11 @@
 
 ## todo
 - lenses
-- "type" command
+- "type" ("say"?) command
+- transfer existing stories into yaml
 
 ## todone
+- yaml parser for state
 - things stuff
 - things define things and have themselves
 - get rid of state
@@ -25,5 +27,4 @@
 - story based time event messages (with X time left, print this message, with Y time left, print message)
 
 ## stretch goalz
-- yaml parser for state
 - state (machine) visualizer

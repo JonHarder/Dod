@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Game
     ( runGame
     ) where
@@ -6,21 +8,24 @@ import Types
 import Actions
 import GameState
 import Color
-import Util (firstJust, prompt, (|>))
+import Util (firstJust, maybeHead, prompt, (|>))
 import InputParser (parseInput)
-import Stories.Types (beginStory)
-import InitState (story)
+import Stories.Types (StoryParseResult(..), beginStory, loadStory)
+-- import InitState (story)
 
 import Control.Applicative ((<|>))
 import Data.Foldable (forM_)
 import Data.Maybe (mapMaybe, fromMaybe)
 import qualified Data.Map.Strict as Map
+import Data.Text (Text, pack, unpack)
+import qualified Data.Text as T
 import System.Console.Haskeline
+import System.Environment
 
 
 data UpdateResult
-  = NoChangeWithMessage String
-  | ChangedState GameState String
+  = NoChangeWithMessage Text
+  | ChangedState GameState Text
   | Terminate String
 
 
@@ -99,41 +104,43 @@ updateState oldState action =
         Just (thing1, thing2, thingAction) ->
           updateStateWith2Things oldState thing1 thing2 thingAction
         Nothing ->
-          NoChangeWithMessage $ red $ "You can't use " ++ s1 ++ " on " ++ s2 ++ " (maybe you can't find one of them or they can't be combined)"
+          NoChangeWithMessage $ red $ T.concat ["You can't use ", s1, " on ", s2, " (maybe you can't find one of them or they can't be combined)"]
 
 
 lookAt :: Label -> [Inventory] -> String
 lookAt thingLabel i =
   let found = firstJust (findInInventory thingLabel) i
-  in maybe ("couldn't find " ++ blue (show thingLabel) ++ " here.") show found
+  in maybe ("couldn't find " ++ unpack (blue (pack (show thingLabel))) ++ " here.") show found
 
 
 lookAtRoom :: Room -> String
 lookAtRoom room =
   let things = rInventory room
-      descriptions = things
-                     |> Map.elems
-                     |> mapMaybe tRoomDescription
-  in rDescription room ++ "\n" ++ unlines descriptions
+      descriptions :: [Text]
+      descriptions =
+        things
+        |> Map.elems
+        |> mapMaybe tRoomDescription
+  in unpack (rDescription room) ++ "\n" ++ unlines (map unpack descriptions)
 
 
 dispatchAction :: GameState -> Action -> UpdateResult
 dispatchAction oldState action =
   case action of
     Look ->
-      NoChangeWithMessage $ lookAtRoom (gRoom oldState)
+      NoChangeWithMessage $ pack $ lookAtRoom (gRoom oldState)
     LookAt label ->
-      NoChangeWithMessage $ lookAt label [roomInventory oldState, gYou oldState]
+      NoChangeWithMessage $ pack $ lookAt label [roomInventory oldState, gYou oldState]
     Inventory ->
-      NoChangeWithMessage $ "you have: " ++ show (Map.keys (gYou oldState))
+      NoChangeWithMessage $ pack $ "you have: " ++ show (Map.keys (gYou oldState))
     Panic ->
       Terminate "you flip the fluff out"
     Update updatingAction ->
       updateState oldState updatingAction
     Help ->
-      NoChangeWithMessage $ "commands: " ++ green "look" ++ ", interact, wait, help, panic"
+      NoChangeWithMessage $ pack $ "commands: " ++ unpack (green "look") ++ ", interact, wait, help, panic"
     BadInput msg ->
-      NoChangeWithMessage $ fromMaybe "huh?" msg
+      NoChangeWithMessage $ pack $ fromMaybe "huh?" msg
 
 
 timesUp :: GameState -> Bool
@@ -145,19 +152,31 @@ loop oldState
   | timesUp oldState = outputStrLn "Times up! You died."
   | otherwise = do
       outputStrLn ""
-      action <- parseInput <$> prompt (green "What do you want to do? ")
+      action <- parseInput <$> prompt (unpack $ green "What do you want to do? ")
       case dispatchAction oldState action of
         NoChangeWithMessage msg -> do
-          outputStrLn msg
+          outputStrLn $ unpack msg
           loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
           forM_ (currentEvent newState') outputStrLn
-          outputStrLn message
+          outputStrLn $ unpack message
           loop newState'
         Terminate msg ->
           outputStrLn msg
 
 
 runGame :: IO ()
-runGame = runInputT defaultSettings $ beginStory story loop
+runGame = do
+  args <- getArgs
+  let mStoryFile = maybeHead args
+  case mStoryFile of
+    Nothing ->
+      putStrLn "usage: dod stories/test.yml"
+    Just path -> do
+      result <- loadStory path
+      case result of
+        FailedToParseStory msg ->
+          putStrLn msg
+        Parsed story ->
+          runInputT defaultSettings $ beginStory story loop
