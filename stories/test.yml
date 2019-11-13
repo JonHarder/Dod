@@ -1,0 +1,11 @@
+welcome: "Welcome to the story"
+game:
+  inventory: {}
+  room:
+    short-description: The starting room
+    description: You find yourself in a room. The Starting room.
+    inventory: {}
+  time: 10
+  events:
+    10: you puke in your mouth a little
+    5: your right pinky falls off
