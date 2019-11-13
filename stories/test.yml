@@ -7,5 +7,6 @@ game:
     inventory: {}
   time: 10
   events:
-    10: you puke in your mouth a little
+    9: you puke in your mouth a little
     5: your right pinky falls off
+    1: your vision begins to fade as your knees buckle
