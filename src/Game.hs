@@ -12,7 +12,8 @@ import Stories.Types (beginStory)
 import InitState (story)
 
 import Control.Applicative ((<|>))
-import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
+import Data.Foldable (forM_)
+import Data.Maybe (mapMaybe, fromMaybe)
 import qualified Data.Map.Strict as Map
 import System.Console.Haskeline
 
@@ -21,21 +22,6 @@ data UpdateResult
   = NoChangeWithMessage String
   | ChangedState GameState String
   | Terminate String
-
-
-roomDiff :: GameState -> GameState -> Maybe String
-roomDiff oldState newState =
-  if gRoom oldState /= gRoom newState
-    then Just $ show $ gRoom newState
-    else Nothing
-
-
-timeDiff :: GameState -> GameState -> Maybe String
-timeDiff oldState newState =
-  if gTimeLeft oldState /= gTimeLeft newState
-    then Just $ show $ gTimeLeft newState
-  else
-    Nothing
 
 
 -- |Decrement the time left of the game by one
@@ -159,18 +145,14 @@ loop oldState
   | timesUp oldState = outputStrLn "Times up! You died."
   | otherwise = do
       outputStrLn ""
-      action <- fmap parseInput $ prompt (green "What do you want to do? ")
+      action <- parseInput <$> prompt (green "What do you want to do? ")
       case dispatchAction oldState action of
         NoChangeWithMessage msg -> do
           outputStrLn msg
           loop oldState
         ChangedState newState message -> do
           let newState' = tickState newState
-          case currentEvent newState' of
-            Nothing ->
-              return ()
-            Just event ->
-              outputStrLn event
+          forM_ (currentEvent newState') outputStrLn
           outputStrLn message
           loop newState'
         Terminate msg ->
