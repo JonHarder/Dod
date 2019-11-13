@@ -129,7 +129,7 @@ instance FromJSON ThingAction where
       "inspect" ->
         Inspect <$> v .: "thing"
       "replace" ->
-        ReplaceSelfWithThings <$> v .: "thing" <*> v .: "things"
+        ReplaceSelfWithThings <$> v .: "message" <*> v .: "things"
       "travel" ->
         TravelRoom <$> v .: "message" <*> v .: "room"
       "describe" ->

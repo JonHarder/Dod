@@ -1,10 +1,30 @@
-welcome: "Welcome to the story"
+welcome: Welcome to the story
 game:
   inventory: {}
   room:
     short-description: The starting room
     description: You find yourself in a room. The Starting room.
-    inventory: {}
+    inventory:
+      door:
+        description: A large, ornate door
+        label: door
+        combinations: {}
+        room-description: A big ol door
+        interaction:
+          action: replace
+          message: you push on the door, and feel it budge a fraction of an inch, pushing harder, you feel it give way a few inches.  Eventually you manage to coerce the door open a few feet, enough so that you think you could probably slip through
+          things:
+            - description: An open, large, ornate door
+              label: door
+              combinations: {}
+              room-description: null
+              interaction:
+                action: travel
+                message: you manage to shimmy though the cracked door, and arrive in a completely barren hallway, devoid of any designer descriptions
+                room:
+                  short-description: an empty hallway
+                  description: you arrive in an empty hallway
+                  inventory: {}
   time: 10
   events:
     9: you puke in your mouth a little
