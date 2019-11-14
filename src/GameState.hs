@@ -4,15 +4,14 @@ module GameState where
 
 import qualified Data.Map.Strict as Map
 import Data.Map.Strict (Map)
-import Data.Text (Text, unpack)
 import qualified Data.Yaml as Y
 import Data.Yaml (FromJSON(..), (.:))
 
 import Types
 
 data Room =
-  Room { rShortDescription :: Text
-       , rDescription :: Text
+  Room { rShortDescription :: String
+       , rDescription :: String
        , rInventory :: Inventory
        }
   deriving Eq
@@ -28,7 +27,7 @@ instance FromJSON Room where
 
 
 instance Show Room where
-  show = unpack . rShortDescription
+  show = rShortDescription
 
 
 type Event = String
@@ -61,11 +60,11 @@ type Inventory = (Map Label Thing)
 
 
 data Thing =
-  Thing { tDescription :: Text
+  Thing { tDescription :: String
         , tInteraction :: ThingAction
         , tCombinations :: Map Label MultiThingAction
         , tLabel :: Label
-        , tRoomDescription :: Maybe Text
+        , tRoomDescription :: Maybe String
         }
 
 instance FromJSON Thing where
@@ -83,13 +82,13 @@ instance Eq Thing where
   t1 == t2 = tDescription t1 == tDescription t2 && tLabel t1 == tLabel t2
 
 instance Show Thing where
-  show = unpack . tDescription
+  show = tDescription
 
 
 data MultiThingAction
   = ActOnThing1 ThingAction
   | ActOnThing2 ThingAction
-  | ActOnNothing Text
+  | ActOnNothing String
   deriving (Eq, Show)
 
 
@@ -110,12 +109,12 @@ instance FromJSON MultiThingAction where
 
 
 data ThingAction
-  = Grab Text
-  | Inspect Text
-  | ReplaceSelfWithThings Text [Thing]
-  | TravelRoom Text Room
+  = Grab String
+  | Inspect String
+  | ReplaceSelfWithThings String [Thing]
+  | TravelRoom String Room
   | Describe
-  | GrabThings Text [Thing]
+  | GrabThings String [Thing]
   | TriggerActionOn Thing ThingAction
   deriving (Eq, Show)
 

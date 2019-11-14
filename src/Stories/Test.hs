@@ -7,7 +7,6 @@ import Stories.Types
 import GameState
 import Color
 import Data.Map.Strict as Map
-import qualified Data.Text as T
 import Types
 
 
@@ -19,7 +18,7 @@ initState =
         , rInventory = Map.empty
         }
       room1 = Room
-        { rShortDescription = T.concat ["The first room, not much to do here as far as you can tell. Maybe you should ", green "look", " around a bit."]
+        { rShortDescription = "The first room, not much to do here as far as you can tell. Maybe you should " ++ green "look" ++ " around a bit."
         , rDescription = "A small dingey dungeon, with a kiddy pool in the center, and a weird table in the corner."
         , rInventory = i
         }
@@ -34,21 +33,21 @@ initState =
         { tDescription = "There's a boat here, for some reason."
         , tInteraction = GrabThings "you found an oar" [oar]
         , tLabel = Label "boat"
-        , tRoomDescription = Just $ T.concat ["There is a ", blue "boat", " in the room."]
+        , tRoomDescription = Just $ "There is a " ++ blue "boat" ++ " in the room."
         , tCombinations = Map.empty
         }
       door = Thing
         { tDescription = "A large, ornate, wooden door"
         , tInteraction = TravelRoom "you walk through the door" room2
         , tLabel = Label "door"
-        , tRoomDescription = Just $ T.concat ["To the north, there is a large, ornate, wooden ", blue "door"]
+        , tRoomDescription = Just $ "To the north, there is a large, ornate, wooden " ++ blue "door"
         , tCombinations = Map.empty
         }
       openBox = Thing
         { tDescription = "Theres a thimble in there"
         , tInteraction = Inspect "its just a box"
         , tLabel = Label "box"
-        , tRoomDescription = Just $ T.concat ["You see an open ", blue "box", " in the room"]
+        , tRoomDescription = Just $ "You see an open " ++ blue "box" ++ " in the room"
         , tCombinations = Map.empty
         }
       thimble = Thing
@@ -62,7 +61,7 @@ initState =
         { tDescription = "You see a box, with a poorly designed lid, propped slightly open. You can't quite make out what's inside."
         , tInteraction = ReplaceSelfWithThings "You open the box." [openBox, thimble]
         , tLabel = Label "box"
-        , tRoomDescription = Just $ T.concat ["There is a ", blue "box", " in the corner of the room"]
+        , tRoomDescription = Just $ "There is a " ++ blue "box" ++ " in the corner of the room"
         , tCombinations = Map.empty
         }
       i = Map.fromList

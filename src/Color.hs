@@ -1,42 +1,37 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Color
   (red, black, green, yellow, blue, magenta, cyan, white)
   where
 
-import Data.Text (Text)
-import qualified Data.Text as T
-
-resetColor :: Text
+resetColor :: String
 resetColor = "\x1b[0m"
 
 
-red :: Text -> Text
-red s = T.concat ["\x1b[31m", s, resetColor]
+red :: String -> String
+red s = "\x1b[31m" ++ s ++ resetColor
 
-black :: Text -> Text
-black s = T.concat ["\x1b[30m",s, resetColor]
-
-
-green :: Text -> Text
-green s = T.concat ["\x1b[32m", s, resetColor]
+black :: String -> String
+black s = "\x1b[30m" ++ s ++ resetColor
 
 
-yellow :: Text -> Text
-yellow s = T.concat ["\x1b[33m", s, resetColor]
+green :: String -> String
+green s = "\x1b[32m" ++ s ++ resetColor
 
 
-blue :: Text -> Text
-blue s = T.concat ["\x1b[34m", s, resetColor]
+yellow :: String -> String
+yellow s = "\x1b[33m" ++ s ++ resetColor
 
 
-magenta :: Text -> Text
-magenta s = T.concat ["\x1b[35m", s, resetColor]
+blue :: String -> String
+blue s = "\x1b[34m" ++ s ++ resetColor
 
 
-cyan :: Text -> Text
-cyan s = T.concat ["\x1b[36m", s, resetColor]
+magenta :: String -> String
+magenta s = "\x1b[35m" ++ s ++ resetColor
 
 
-white :: Text -> Text
-white s = T.concat ["\x1b[37m", s, resetColor]
+cyan :: String -> String
+cyan s = "\x1b[36m" ++ s ++ resetColor
+
+
+white :: String -> String
+white s = "\x1b[37m" ++ s ++ resetColor
