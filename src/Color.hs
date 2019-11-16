@@ -1,37 +1,57 @@
 module Color
-  (red, black, green, yellow, blue, magenta, cyan, white)
+  (blink, bold, underline, red, black, green, yellow, blue, magenta, cyan, white)
   where
 
+escapeCode :: Int -> String
+escapeCode i = "\x1b[" ++ show i ++ "m"
+
+
 resetColor :: String
-resetColor = "\x1b[0m"
+resetColor = escapeCode 0
+
+
+effect :: Int -> String -> String
+effect i s = escapeCode i ++ s ++ resetColor
+
+
+blink :: String -> String
+blink = effect 5
+
+
+underline :: String -> String
+underline = effect 4
+
+
+bold :: String -> String
+bold = effect 1
 
 
 red :: String -> String
-red s = "\x1b[31m" ++ s ++ resetColor
+red = effect 31
 
 black :: String -> String
-black s = "\x1b[30m" ++ s ++ resetColor
+black = effect 30
 
 
 green :: String -> String
-green s = "\x1b[32m" ++ s ++ resetColor
+green = effect 32
 
 
 yellow :: String -> String
-yellow s = "\x1b[33m" ++ s ++ resetColor
+yellow = effect 33
 
 
 blue :: String -> String
-blue s = "\x1b[34m" ++ s ++ resetColor
+blue = effect 34
 
 
 magenta :: String -> String
-magenta s = "\x1b[35m" ++ s ++ resetColor
+magenta = effect 35
 
 
 cyan :: String -> String
-cyan s = "\x1b[36m" ++ s ++ resetColor
+cyan = effect 36
 
 
 white :: String -> String
-white s = "\x1b[37m" ++ s ++ resetColor
+white = effect 37

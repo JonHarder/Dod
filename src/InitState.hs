@@ -2,4 +2,4 @@ module InitState
   (story)
   where
 
-import Stories.CryoSleep
+import Stories.DungeonsOfDoom
