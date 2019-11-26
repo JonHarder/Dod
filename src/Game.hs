@@ -9,7 +9,7 @@ import Color
 import Util (firstJust, prompt, (|>))
 import InputParser (parseInput)
 import Stories.Types (beginStory)
-import InitState (story)
+import InitState (pickStory)
 
 import Control.Applicative ((<|>))
 import Data.Foldable (forM_)
@@ -166,4 +166,6 @@ loop oldState
 
 
 runGame :: IO ()
-runGame = runInputT defaultSettings $ beginStory story loop
+runGame = do
+  story <- pickStory
+  runInputT defaultSettings $ beginStory story loop

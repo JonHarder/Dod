@@ -84,4 +84,4 @@ initState =
      }
 
 story :: Story
-story = Story "This is a test story" initState
+story = Story "Cryosleep" "This is a test story" initState

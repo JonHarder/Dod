@@ -9,12 +9,13 @@ import qualified Data.Yaml as Y
 import Data.Yaml (FromJSON(..), (.:))
 
 
-data Story = Story { welcome :: String, game :: GameState }
+data Story = Story { title :: String, welcome :: String, game :: GameState }
   deriving (Show)
 
 instance FromJSON Story where
   parseJSON (Y.Object v) =
     Story <$>
+    v .: "title" <*>
     v .: "welcome" <*>
     v .: "game"
   parseJSON _ =
