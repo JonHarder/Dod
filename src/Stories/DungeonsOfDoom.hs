@@ -35,4 +35,7 @@ gameState = GameState
 
 
 story :: Story
-story = Story ("Welcome...to the\n\n\t\t" ++ (bold . underline . red) "DUNGEONS OF DOOM") gameState
+story = Story
+  "Dungeons of Doom"
+  ("Welcome...to the\n\n\t\t" ++ (bold . underline . red) "DUNGEONS OF DOOM")
+  gameState

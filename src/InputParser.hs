@@ -59,8 +59,17 @@ parseLook = do
   return Look
 
 
+-- |Removes the first instance found from the list of strings given
+strip :: [String] -> Parser ()
+strip aliases =
+  try (alias aliases >> space >> return ()) <|> return ()
+
+
 parseLookAt :: Parser Action
-parseLookAt = unaryVerb ["look", "l"] $ LookAt . Label
+parseLookAt = do
+  string "look" >> space
+  strip ["at", "for"] >> strip ["a", "the"]
+  LookAt . Label <$> restOfLine
 
 
 parseTell :: Parser Action
