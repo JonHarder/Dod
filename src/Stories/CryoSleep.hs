@@ -84,4 +84,4 @@ initState =
      }
 
 story :: Story
-story = Story "Cryosleep" "This is a test story" initState
+story = Story "CryoSleep" ("Welcome to CryoSleep! Take a look around the world, and try to survive. It is not possible to win on your first try, so take your time and explore. Using the " ++ green "look" ++ " command will tell you about the room you are in, and typing " ++ green "look" ++ " and then a " ++ blue "blue" ++ " label will describe that " ++ blue "thing" ++ ". Looking is always free (it will never take time). Typing " ++ green "interact" ++ " and then a " ++ blue "label" ++ " will often cost time, but also tell you more about the labeled thing, or even cause something to happen. The last thing you can do is to " ++ green "use" ++ " " ++ blue "something" ++  " on " ++ blue "something" ++ " else. Note that the first thing must be in your " ++ green "inventory" ++ ". Good luck!") initState
