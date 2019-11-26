@@ -15,6 +15,7 @@ data Action
   | Look
   | LookAt Label
   | Inventory
+  | Tell Label String
   | Update UpdatingAction
   | Help
   | BadInput (Maybe String)

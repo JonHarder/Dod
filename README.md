@@ -1,12 +1,13 @@
 # Dod
 
 ## todo
-- lenses
 - "type" ("say"?) command
 - transfer existing stories into yaml
+- yaml parser for state
+  - need to express objects separately
+  - tokenization pass, linking pass
 
 ## todone
-- yaml parser for state
 - things stuff
 - things define things and have themselves
 - get rid of state
@@ -28,3 +29,4 @@
 
 ## stretch goalz
 - state (machine) visualizer
+- lenses

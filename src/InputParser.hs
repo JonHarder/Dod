@@ -34,30 +34,39 @@ verb s a = alias s >> eof >> return a
 
 
 alias :: [String] -> Parser String
-alias = choice . map string
+alias = choice . map (try . string)
 
 
 unaryVerb :: [String] -> (String -> a) -> Parser a
 unaryVerb s f = do
   _ <- alias s >> space
-  fmap f restOfLine
+  f <$> restOfLine
 
 
-binaryVerb :: String -> String -> (Label -> Label -> a) -> Parser a
+binaryVerb :: [String] -> String -> (Label -> Label -> a) -> Parser a
 binaryVerb action preposition f = do
-  _ <- string action >> space
-  label1 <- fmap Label word
+  _ <- alias action >> space
+  label1 <- Label <$> word
   _ <- string preposition >> space
-  label2 <- fmap Label word
+  label2 <- Label <$> word
   return $ f label1 label2
 
 
 parseLook :: Parser Action
-parseLook = verb ["look"] Look
+parseLook = do
+  _ <- string "look"
+  void (space >> string "around") <|> eof
+  return Look
 
 
 parseLookAt :: Parser Action
-parseLookAt = unaryVerb ["look"] $ LookAt . Label
+parseLookAt = unaryVerb ["look", "l"] $ LookAt . Label
+
+
+parseTell :: Parser Action
+parseTell = do
+  _ <- alias ["ask", "say", "tell"] >> space
+  Tell . Label <$> word <*> restOfLine
 
 
 parsePanic :: Parser Action
@@ -73,11 +82,11 @@ parseWait = verb ["wait"] (Update NoOp)
 
 
 parseCombine :: Parser Action
-parseCombine = binaryVerb "use" "on" (\l1 l2 -> Update (Combine l1 l2))
+parseCombine = binaryVerb ["use"] "on" (\l1 l2 -> Update (Combine l1 l2))
 
 
 parseInteract :: Parser Action
-parseInteract = unaryVerb ["open", "interact", "grab", "take"] $ Update . Interact . Label
+parseInteract = unaryVerb ["press", "open", "interact", "grab", "take"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action
@@ -86,14 +95,15 @@ parseInventory = verb ["inventory", "i"] Inventory
 
 parseAction :: Parser Action
 parseAction =
-      try parseLookAt
-  <|> try parseInteract
+  try parseLook
+  <|> parseLookAt
+  <|> parseInteract
   <|> parseCombine
-  <|> parseLook
   <|> parseInventory
   <|> parsePanic
   <|> parseHelp
   <|> parseWait
+  <|> parseTell
 
 
 parseInput :: String -> Action

@@ -6,9 +6,9 @@ import Types
 import Actions
 import GameState
 import Color
-import Util (firstJust, maybeHead, prompt, (|>))
+import Util (firstJust, prompt, (|>))
 import InputParser (parseInput)
-import Stories.Types (StoryParseResult(..), beginStory, loadStory)
+import Stories.Types (beginStory)
 import InitState (story)
 
 import Control.Applicative ((<|>))
@@ -16,7 +16,6 @@ import Data.Foldable (forM_)
 import Data.Maybe (mapMaybe, fromMaybe)
 import qualified Data.Map.Strict as Map
 import System.Console.Haskeline
-import System.Environment
 
 
 data UpdateResult
@@ -126,6 +125,11 @@ dispatchAction oldState action =
       NoChangeWithMessage $ lookAtRoom (gRoom oldState)
     LookAt label ->
       NoChangeWithMessage $ lookAt label [roomInventory oldState, gYou oldState]
+    Tell target msg ->
+      let notFound   = NoChangeWithMessage "you yell into the room..."
+          tell thing = NoChangeWithMessage $ "you tell " ++ show (tLabel thing) ++ " '" ++ msg ++ "'"
+          mThing     = findInInventory target $ roomInventory oldState
+      in maybe notFound tell mThing
     Inventory ->
       NoChangeWithMessage $ "you have: " ++ show (Map.keys (gYou oldState))
     Panic ->
@@ -159,22 +163,6 @@ loop oldState
           loop newState'
         Terminate msg ->
           outputStrLn msg
-
-
-runGameFromFile :: IO ()
-runGameFromFile = do
-  args <- getArgs
-  let mStoryFile = maybeHead args
-  case mStoryFile of
-    Nothing ->
-      putStrLn "usage: dod stories/test.yml"
-    Just path -> do
-      result <- loadStory path
-      case result of
-        FailedToParseStory msg ->
-          putStrLn msg
-        Parsed parsedStory ->
-          runInputT defaultSettings $ beginStory parsedStory loop
 
 
 runGame :: IO ()
