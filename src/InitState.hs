@@ -12,10 +12,6 @@ import qualified Stories.Mangos as Mangos
 import qualified Stories.CryoSleep as CryoSleep
 
 
-readInt :: IO Int
-readInt = read <$> getLine
-
-
 pickStory :: IO Story
 pickStory = do
   let stories = [ DungeonsOfDoom.story
@@ -27,5 +23,5 @@ pickStory = do
     putStrLn $ show index ++ ": " ++ title story
   putStr "enter number of story: "
   hFlush stdout
-  input <- readInt
+  input <- readLn :: IO Int
   maybe pickStory return (lookup input options)

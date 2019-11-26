@@ -54,7 +54,7 @@ binaryVerb action preposition f = do
 
 parseLook :: Parser Action
 parseLook = do
-  _ <- string "look"
+  _ <- alias ["look", "ls"]
   void (space >> string "around") <|> eof
   return Look
 
