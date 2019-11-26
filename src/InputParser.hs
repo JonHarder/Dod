@@ -95,7 +95,7 @@ parseCombine = binaryVerb ["use"] "on" (\l1 l2 -> Update (Combine l1 l2))
 
 
 parseInteract :: Parser Action
-parseInteract = unaryVerb ["press", "open", "interact", "grab", "take"] $ Update . Interact . Label
+parseInteract = unaryVerb ["use", "press", "open", "interact", "grab", "take"] $ Update . Interact . Label
 
 
 parseInventory :: Parser Action
@@ -106,8 +106,8 @@ parseAction :: Parser Action
 parseAction =
   try parseLook
   <|> parseLookAt
-  <|> parseInteract
-  <|> parseCombine
+  <|> try parseCombine
+  <|> try parseInteract
   <|> parseInventory
   <|> parsePanic
   <|> parseHelp
