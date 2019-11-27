@@ -30,7 +30,9 @@ pickStory = do
   hFlush stdout
   input <- readInt
   case input of
-    Just i ->
-      maybe pickStory return (lookup i options)
+    Just i -> do
+      story <- maybe pickStory return (lookup i options)
+      putStrLn "--------------------------------"
+      return story
     Nothing ->
       pickStory
