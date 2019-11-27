@@ -60,11 +60,11 @@ type Inventory = (Map Label Thing)
 
 
 data Thing =
-  Thing { tDescription :: String
-        , tInteraction :: ThingAction
-        , tCombinations :: Map Label MultiThingAction
-        , tLabel :: Label
-        , tRoomDescription :: Maybe String
+  Thing { tDescription :: String                       -- will be displayed when looked at
+        , tInteraction :: ThingAction                  -- what happens when you interact with it
+        , tCombinations :: Map Label MultiThingAction  -- a map of what happens when you try to combine a thing with the key Label with this thing
+        , tLabel :: Label                              -- the name of the thing that it will be lookup up by
+        , tRoomDescription :: Maybe String             -- if present, the message that will be displayed when looking at a room containing this thing
         }
 
 instance FromJSON Thing where
