@@ -1,5 +1,5 @@
 module Color
-  (blink, beep, bold, underline, red, black, green, yellow, blue, magenta, cyan, white)
+  (blink, beep, bold, underline, red, black, green, yellow, blue, magenta, cyan, white, thing, action)
   where
 
 escapeCode :: Int -> String
@@ -59,3 +59,9 @@ cyan = effect 36
 
 white :: String -> String
 white = effect 37
+
+thing :: String -> String
+thing = blue . bold
+
+action :: String -> String
+action = green . bold

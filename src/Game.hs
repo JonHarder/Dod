@@ -16,6 +16,7 @@ import Data.Foldable (forM_)
 import Data.Maybe (mapMaybe, fromMaybe)
 import qualified Data.Map.Strict as Map
 import System.Console.Haskeline
+import Data.List (intercalate)
 
 
 data UpdateResult
@@ -131,7 +132,7 @@ dispatchAction oldState action =
           mThing     = findInInventory target $ roomInventory oldState
       in maybe notFound tell mThing
     Inventory ->
-      NoChangeWithMessage $ "you have: " ++ show (Map.keys (gYou oldState))
+      NoChangeWithMessage $ "you have: [" ++ intercalate ", " (map (Color.thing . show) (Map.keys (gYou oldState))) ++ "]"
     Panic ->
       Terminate "you flip the fluff out"
     Update updatingAction ->
