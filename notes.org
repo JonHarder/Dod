@@ -1,12 +1,10 @@
 * better commands
 ** examples
    - walk to the door
-   - look for the keycard
    - go to the scanner
-   - open the door
    - label aliases (door, metal door, etc.)
+** improvements
    - alias travel -> go|exit|walk (out, the, through)
-   - give helpful info when command only contains label (what do you want to do with LABEL)
    - walk to an item in room
    - more room description
      - extra details

@@ -140,7 +140,11 @@ dispatchAction oldState action =
     Help ->
       NoChangeWithMessage $ "commands: " ++ green "look" ++ ", interact, wait, help, panic"
     BadInput msg ->
-      NoChangeWithMessage $ fromMaybe "huh?" msg
+      case firstJust (findInInventory (Label msg)) [roomInventory oldState, gYou oldState] of
+        Just item ->
+          NoChangeWithMessage $ "What do you want to do with the " ++ thing (show . tLabel $ item)
+        Nothing ->
+          NoChangeWithMessage "You mutter incomprehensibly to yourself"
 
 
 timesUp :: GameState -> Bool

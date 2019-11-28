@@ -18,5 +18,5 @@ data Action
   | Tell Label String
   | Update UpdatingAction
   | Help
-  | BadInput (Maybe String)
+  | BadInput String
   deriving (Show)

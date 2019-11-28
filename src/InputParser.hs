@@ -95,7 +95,10 @@ parseCombine = binaryVerb ["use"] "on" (\l1 l2 -> Update (Combine l1 l2))
 
 
 parseInteract :: Parser Action
-parseInteract = unaryVerb ["push", "use", "press", "open", "interact", "grab", "take"] $ Update . Interact . Label
+parseInteract = do
+  alias ["push", "use", "press", "open", "interact", "grab", "take"]
+  space >> strip ["the"]
+  Update . Interact . Label <$> restOfLine
 
 
 parseInventory :: Parser Action
@@ -116,5 +119,9 @@ parseAction =
 
 
 parseInput :: String -> Action
-parseInput =
-  fromRight (BadInput Nothing) . parse parseAction ""
+parseInput input =
+  case parse parseAction "" input of
+    Left err ->
+      BadInput input
+    Right action ->
+      action
