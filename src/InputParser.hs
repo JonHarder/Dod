@@ -78,6 +78,13 @@ parseTell = do
   Tell . Label <$> word <*> restOfLine
 
 
+parseWalk :: Parser Action
+parseWalk = do
+  alias ["walk", "go", "enter"] >> space
+  strip ["to", "into", "through", "towards", "onto"]
+  strip ["the"]
+  Update . Walk . Label <$> restOfLine
+
 parsePanic :: Parser Action
 parsePanic = verb ["panic"] Panic
 
@@ -113,6 +120,7 @@ parseAction =
   <|> try parseInteract
   <|> parseInventory
   <|> parsePanic
+  <|> parseWalk
   <|> parseHelp
   <|> parseWait
   <|> parseTell

@@ -95,6 +95,14 @@ updateState oldState action =
           NoChangeWithMessage $ red "couldn't find that here"
         Just thing ->
           updateStateWithThing oldState thing (tInteraction thing)
+    Walk label ->
+      case findInInventory label $ roomInventory oldState of
+        Just thing ->
+          case tInteraction thing of
+            TravelRoom msg room ->
+              updateStateWithThing oldState thing (tInteraction thing)
+            _ ->
+              NoChangeWithMessage $ red "You can't walk into that"
     Combine l1@(Label s1) l2@(Label s2) ->
       case findCombinableThings oldState l1 l2 of
         Just (thing1, thing2, thingAction) ->
