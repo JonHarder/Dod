@@ -1,5 +1,5 @@
 module InitState
-  (pickStory)
+  (pickStory, Mangos.story)
 where
 
 import Control.Monad (forM_)
